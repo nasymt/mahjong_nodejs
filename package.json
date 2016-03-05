@@ -1,0 +1,16 @@
+{
+  "name": "node-ws-test",
+  "version": "0.0.1",
+  "dependencies": {
+    "express": "*",
+    "http" : "*",
+    "socket.io" : "*"
+  },
+  "engines": {
+    "node": "v5.6.0",
+    "npm" : "3.6.0"
+  },
+  "scripts": {
+    "start": "node app.js"
+  }
+}

@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Socket.IO chat</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+ <!--//-----TOP画面---------->
+<form id="setupForm">
+  <select id="bakaze">
+  	<option value="ton">東</option>
+  	<option value="nan">南</option>
+  	<option value="sha">西</option>
+  	<option value="pei">北</option>
+  	<option value="stage">ステージ</option>
+  </select>
+  <input type="submit" value="Send!">
+  </form>  
+<!--  //--------------------- -->
+
+<!--  
+    <ul id="messages"></ul>
+    <form action="">
+      <input id="m" autocomplete="off" /><button>Send</button>
+    </form>
+-->
+<p id="your_bakaze">あなた：</p>
+    <script src="//cdn.socket.io/socket.io-1.2.0.js"></script>
+    <script src="//code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+  var socket = io();
+  $('form').submit(function(){
+    socket.emit('chat message', $('#m').val());
+    $('#m').val('');
+    return false;
+  });
+  
+  $('#setupForm').submit(function(e){
+  	e.preventDefault();
+  	socket.json.emit('setup',{
+  		room:$('#bakaze').val()	
+  	});
+  });
+  
+  socket.on('chat message', function(msg){
+    $('#messages').append($('<li>').text(msg));
+  });
+  socket.on('notice_bakaze' , function(msg){
+  $('#your_bakaze').append($('<p>').text(msg));
+  });
+  
+</script>
+
+  </body>
+</html>
