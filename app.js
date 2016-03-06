@@ -1,6 +1,3 @@
-/*var app = require('express')();
-var http = require('http').Server(app);
-var io = require('socket.io')(http);*/
 var express = require('express'),
 app = express(),
 http = require('http').Server(app),
@@ -13,14 +10,22 @@ app.get('/', function(req, res){
 
 app.use(express.static('public'));
 
+
+var playerId=new Array(4);
+var playerId_index;
+var playerNum=0;
 io.on('connection', function(socket){
   socket.on('chat message', function(msg){
     io.emit('chat message', msg);
   });
   
-  var playerNum=0;
+
   socket.on('setup',function(data){
   	socket.join(data.room);
+//  	console.log(io.adapter.rooms[data.room]);
+	playerId[playerId_index] = socket.id;
+	if(playerId_index<4)playerId_index++;
+	console.log(playerId[playerId_index]);
   	playerNum++;
   	var baName;
   	switch(data.room){
@@ -44,8 +49,64 @@ io.on('connection', function(socket){
 	io.sockets.emit('notice_bakaze', playerNum);
   	console.log("あなたは"+baName+"です。参加人数:"+playerNum+"人");
   });
+  
+  var ton_tehai = new Array(14),
+  nan_tehai = new Array(14),
+  sha_tehai = new Array(14),
+  pei_tehai = new Array(14),
+  used_hai = new Array(136);
+  var used_index = 0;
+  var temp = 0;
   socket.on('haipai',function(data){
-  	if(data==1){//配牌を行う
+  	if(data>=0){//配牌を行う
+  		var all_pai = [];
+  		for (var i=0; i<136;i++){
+  			all_pai[i] = i;
+  		}
+  		var n = all_pai.length;
+  		for(var i = (n-1) ; i >= 0;i--){
+  			var r = Math.floor(Math.random() * (i+1));
+  			var tmp = all_pai[i];
+  			all_pai[i] = all_pai[r];
+  			all_pai[r] = tmp;
+  		}
+  		for(var i=0;i<13;i++){
+  			ton_tehai[i]=all_pai[i];
+  			nan_tehai[i]=all_pai[i+13];
+  			sha_tehai[i]=all_pai[i+26];
+  		}
+  		socket.to(playerId[0]).emit("tehai","ok");
+  		socket.to("ton").emit("tehai",{
+  			tehai1 : ton_tehai[0],
+  			tehai2 : ton_tehai[1],
+  			tehai3 : ton_tehai[2],
+  			tehai4 : ton_tehai[3],
+  			tehai5 : ton_tehai[4],
+  			tehai6 : ton_tehai[5],
+  			tehai7 : ton_tehai[6],
+  			tehai8 : ton_tehai[7],
+  			tehai9 : ton_tehai[8],
+  			tehai10 : ton_tehai[9],
+  			tehai11 : ton_tehai[10],
+  			tehai12 : ton_tehai[11],
+  			tehai13 : ton_tehai[12],
+  		});
+  		socket.to("nan").emit("tehai",{
+  			tehai1 : nan_tehai[0],
+  			tehai2 : nan_tehai[1],
+  			tehai3 : nan_tehai[2],
+  			tehai4 : nan_tehai[3],
+  			tehai5 : nan_tehai[4],
+  			tehai6 : nan_tehai[5],
+  			tehai7 : nan_tehai[6],
+  			tehai8 : nan_tehai[7],
+  			tehai9 : nan_tehai[8],
+  			tehai10 : nan_tehai[9],
+  			tehai11 : nan_tehai[10],
+  			tehai12 : nan_tehai[11],
+  			tehai13 : nan_tehai[12],
+  		});
+  		socket.to("nan").emit("tehai" , "you are nan");
   		console.log("配牌完了！");
   	}
   });

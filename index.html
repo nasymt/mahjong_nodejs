@@ -24,22 +24,14 @@
   <input type="submit" value="Send!">
   </form>  
 </div>
-<form id="doHaipai"></form>
+<form id="doHaipai3"></form>
+<form id="doHaipai4"></form>
 <div id="startWaiting">
 	<p id="joinNum">現在の参加人数：0人</p>
 	<p>対局開始まで暫くお待ち下さい</p>
 </div>
-
-
-<!--  //--------------------- -->
-
-<!--  
-    <ul id="messages"></ul>
-    <form action="">
-      <input id="m" autocomplete="off" /><button>Send</button>
-    </form>
-<p id="your_bakaze">あなた：</p>
--->
+<!--------------プレイ画面----------------->
+<div id="tehai"></div>
 
     <script src="//cdn.socket.io/socket.io-1.2.0.js"></script>
     <script src="//code.jquery.com/jquery-1.11.1.js"></script>
@@ -52,10 +44,15 @@
     return false;
   });
   
-  $('#doHaipai').submit(function(){
-  	socket.emit('haipai' , 1);
-  	console.log("okok");
+  $('#doHaipai3').submit(function(){
+  	socket.emit('haipai' , 0);
+  	console.log("3麻開始");
   });
+  $('#doHaipai4').submit(function(){
+  	socket.emit('haipai' , 1);
+  	console.log("4麻開始");
+  });
+  
   
   $('#setupForm').submit(function(e){
   	e.preventDefault();
@@ -70,7 +67,8 @@
 	else if(val=="pei")val="北";
   	document.getElementById("yourKaze").innerHTML = "<p>あなたは"+val+"家です。</p>";
 	if(val=="stage"){
-  		document.getElementById("doHaipai").innerHTML+="<input type=\"submit\" value=\"配牌\">";
+  		document.getElementById("doHaipai3").innerHTML+="<input type=\"submit\" value=\"配牌(3麻)\">";
+  		document.getElementById("doHaipai4").innerHTML+="<input type=\"submit\" value=\"配牌(4麻)\">";
   	}
   });
   
@@ -79,6 +77,43 @@
   });
   socket.on('notice_bakaze' , function(msg){
 	document.getElementById("joinNum").innerHTML="<p id=\"joinNum\">現在の参加人数："+msg+"人</p>";
+  });
+  
+  var myTehai = new Array(14);
+  var myTehai_type = new Array(14);
+  socket.on('tehai' , function(msg){
+  	myTehai[0]=msg.tehai1;
+  	myTehai[1]=msg.tehai2;
+  	myTehai[2]=msg.tehai3;
+  	myTehai[3]=msg.tehai4;
+  	myTehai[4]=msg.tehai5;
+  	myTehai[5]=msg.tehai6;
+  	myTehai[6]=msg.tehai7;
+  	myTehai[7]=msg.tehai8;
+  	myTehai[8]=msg.tehai9;
+  	myTehai[9]=msg.tehai10;
+  	myTehai[10]=msg.tehai11;
+  	myTehai[11]=msg.tehai12;
+  	myTehai[12]=msg.tehai13;
+  	document.getElementById("tehai").innerHTML = "<p>"+msg.tehai1+":"+msg.tehai2+":"+msg.tehai3+":"+msg.tehai4+"</p>";
+  	for(var i=0;i<2;i++){
+  		var pai_img;
+  		if(myTehai[i]>=0&&myTehai[i]<36){//マンズ
+  			myTehai_type[i]=Math.floor(myTehai[i]/4);
+  			pai_img = "man" + myTehai_type[i] + "-66-90-l.png";
+  		}else if(myTehai[i]>=36&&myTehai[i]<72){//ピンズ
+  			myTehai_type[i] = Math.floor((myTehai[i]-36)/4);
+  			pai_img = "pin" + myTehai_type[i] + "-66-90-l.png";
+  		}else if(myTehai[i]>=72&&myTehai[i]<108){//ソーズ
+  			myTehai_type[i] = Math.floor((myTehai[i]-72)/4);
+  			pai_img = "sou" + myTehai_type[i] + "-66-90-l.png";
+  		}else if(myTehai[i]>=36&&myTehai[i]<72){//字牌
+  			myTehai_type[i] = Math.floor((myTehai[i]-108)/4);
+  			pai_img = "ji" + myTehai_type[i] + "-66-90-l.png";
+  		}
+  		document.getElementById("tehai").innerHTML +="<img src=\"public/img/"+pai_img + ">";
+	}
+  	
   });
   
 </script>
