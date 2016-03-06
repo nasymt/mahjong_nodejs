@@ -1,22 +1,36 @@
 <!doctype html>
 <html>
   <head>
-    <title>Socket.IO chat</title>
+    <title>麻雀テスト</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
     <link rel="stylesheet" href="style.css">
   </head>
   <body>
+  <!-------common--------->
+  <div id="yourKaze">
+  <p>場風を選択してください。</p>
+  </div>
+  
  <!--//-----TOP画面---------->
-<form id="setupForm">
-  <select id="bakaze">
+ <div id="top">
+<form id="setupForm" name="setupFormName">
+  <select id="bakaze" name="bakazeName">
   	<option value="ton">東</option>
   	<option value="nan">南</option>
   	<option value="sha">西</option>
   	<option value="pei">北</option>
   	<option value="stage">ステージ</option>
-  </select>
+  </select>  
   <input type="submit" value="Send!">
   </form>  
+</div>
+<form id="doHaipai"></form>
+<div id="startWaiting">
+	<p id="joinNum">現在の参加人数：0人</p>
+	<p>対局開始まで暫くお待ち下さい</p>
+</div>
+
+
 <!--  //--------------------- -->
 
 <!--  
@@ -24,11 +38,13 @@
     <form action="">
       <input id="m" autocomplete="off" /><button>Send</button>
     </form>
--->
 <p id="your_bakaze">あなた：</p>
+-->
+
     <script src="//cdn.socket.io/socket.io-1.2.0.js"></script>
     <script src="//code.jquery.com/jquery-1.11.1.js"></script>
     <script>
+  
   var socket = io();
   $('form').submit(function(){
     socket.emit('chat message', $('#m').val());
@@ -36,18 +52,33 @@
     return false;
   });
   
+  $('#doHaipai').submit(function(){
+  	socket.emit('haipai' , 1);
+  	console.log("okok");
+  });
+  
   $('#setupForm').submit(function(e){
   	e.preventDefault();
   	socket.json.emit('setup',{
   		room:$('#bakaze').val()	
   	});
+  	var val = document.setupFormName.bakazeName.value;
+  	document.getElementById("top").innerHTML="<p></p>";
+	if(val=="ton")val="東";
+	else if(val=="nan")val="南";
+	else if(val=="sha")val="西";
+	else if(val=="pei")val="北";
+  	document.getElementById("yourKaze").innerHTML = "<p>あなたは"+val+"家です。</p>";
+	if(val=="stage"){
+  		document.getElementById("doHaipai").innerHTML+="<input type=\"submit\" value=\"配牌\">";
+  	}
   });
   
   socket.on('chat message', function(msg){
     $('#messages').append($('<li>').text(msg));
   });
   socket.on('notice_bakaze' , function(msg){
-  $('#your_bakaze').append($('<p>').text(msg));
+	document.getElementById("joinNum").innerHTML="<p id=\"joinNum\">現在の参加人数："+msg+"人</p>";
   });
   
 </script>

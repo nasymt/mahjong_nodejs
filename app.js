@@ -18,9 +18,10 @@ io.on('connection', function(socket){
     io.emit('chat message', msg);
   });
   
+  var playerNum=0;
   socket.on('setup',function(data){
   	socket.join(data.room);
-  	
+  	playerNum++;
   	var baName;
   	switch(data.room){
   		case "ton":
@@ -35,9 +36,18 @@ io.on('connection', function(socket){
   		case "pei":
   			baName="北";
   			break;
+  		case "stage":
+  			baName="ステージ";
+  			break;
   	}
-  	socket.emit('notice_bakaze',"あなたは"+baName+"です。");
-  	console.log("あなたは"+baName+"です。" );
+//  	socket.emit('notice_bakaze',"あなたは"+baName+"です。");
+	io.sockets.emit('notice_bakaze', playerNum);
+  	console.log("あなたは"+baName+"です。参加人数:"+playerNum+"人");
+  });
+  socket.on('haipai',function(data){
+  	if(data==1){//配牌を行う
+  		console.log("配牌完了！");
+  	}
   });
   
 });
