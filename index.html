@@ -31,7 +31,7 @@
 	<p>対局開始まで暫くお待ち下さい</p>
 </div>
 <!--------------プレイ画面----------------->
-<div id="tehai"></div>
+<div id="tehai"><img  id="tehai_img1" src="./img/aka1-66-90-l.png"><img id="tehai_img2" src="./img/aka1-66-90-l.png"><img id="tehai_img3" src="./img/aka1-66-90-l.png"><img id="tehai_img4" src="./img/aka1-66-90-l.png"><img id="tehai_img5" src="./img/aka1-66-90-l.png"><img id="tehai_img6" src="./img/aka1-66-90-l.png"><img id="tehai_img7" src="./img/aka1-66-90-l.png"><img id="tehai_img8" src="./img/aka1-66-90-l.png"><img id="tehai_img9" src="./img/aka1-66-90-l.png"><img id="tehai_img10" src="./img/aka1-66-90-l.png"><img id="tehai_img11" src="./img/aka1-66-90-l.png"><img id="tehai_img12" src="./img/aka1-66-90-l.png"><img id="tehai_img13" src="./img/aka1-66-90-l.png"></div>
 
     <script src="//cdn.socket.io/socket.io-1.2.0.js"></script>
     <script src="//code.jquery.com/jquery-1.11.1.js"></script>
@@ -95,24 +95,34 @@
   	myTehai[10]=msg.tehai11;
   	myTehai[11]=msg.tehai12;
   	myTehai[12]=msg.tehai13;
-  	document.getElementById("tehai").innerHTML = "<p>"+msg.tehai1+":"+msg.tehai2+":"+msg.tehai3+":"+msg.tehai4+"</p>";
-  	for(var i=0;i<2;i++){
+  	//document.getElementById("tehai").innerHTML = "<p>"+msg.tehai1+":"+msg.tehai2+":"+msg.tehai3+":"+msg.tehai4+"</p>";
+  
+  	document.getElementById("tehai").innerHTML ="<div id=\"tehai\">";
+  	/*---------------------
+  	0-35:マンズ 36-71:ピンズ 72-107:ソーズ 108-135:字牌
+  	0~3:1 4~7: 2  8~11:3  12~15:4  16~19:5
+  	36-39:_1 40-43:_2 44-47:_3 48-51:_4 52-55:_5 56
+  	
+  	---------------------*/
+  	for(var i=0;i<13;i++){
   		var pai_img;
   		if(myTehai[i]>=0&&myTehai[i]<36){//マンズ
-  			myTehai_type[i]=Math.floor(myTehai[i]/4);
+  			myTehai_type[i]=Math.floor((myTehai[i])/4)+1;
   			pai_img = "man" + myTehai_type[i] + "-66-90-l.png";
   		}else if(myTehai[i]>=36&&myTehai[i]<72){//ピンズ
-  			myTehai_type[i] = Math.floor((myTehai[i]-36)/4);
+  			myTehai_type[i] = Math.floor((myTehai[i]-36)/4)+1;
   			pai_img = "pin" + myTehai_type[i] + "-66-90-l.png";
   		}else if(myTehai[i]>=72&&myTehai[i]<108){//ソーズ
-  			myTehai_type[i] = Math.floor((myTehai[i]-72)/4);
+  			myTehai_type[i] = Math.floor((myTehai[i]-72)/4)+1;
   			pai_img = "sou" + myTehai_type[i] + "-66-90-l.png";
-  		}else if(myTehai[i]>=36&&myTehai[i]<72){//字牌
-  			myTehai_type[i] = Math.floor((myTehai[i]-108)/4);
+  		}else if(myTehai[i]>=108&&myTehai[i]<136){//字牌
+  			myTehai_type[i] = Math.floor((myTehai[i]-108)/4)+1;
   			pai_img = "ji" + myTehai_type[i] + "-66-90-l.png";
   		}
-  		document.getElementById("tehai").innerHTML +="<img src=\"public/img/"+pai_img + ">";
+  		console.log(i+":"+pai_img+":"+myTehai[i]+":"+myTehai_type[i]);
+  		document.getElementById("tehai").innerHTML +="<img src=\"./img/"+pai_img+"\">";
 	}
+	document.getElementById("tehai").innerHTML +="</div>";
   	
   });
   

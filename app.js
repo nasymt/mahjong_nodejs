@@ -2,6 +2,7 @@ var express = require('express'),
 app = express(),
 http = require('http').Server(app),
 io = require('socket.io')(http);
+var fs =require('fs');
 
 
 app.get('/', function(req, res){
@@ -22,7 +23,6 @@ io.on('connection', function(socket){
 
   socket.on('setup',function(data){
   	socket.join(data.room);
-//  	console.log(io.adapter.rooms[data.room]);
 	playerId[playerId_index] = socket.id;
 	if(playerId_index<4)playerId_index++;
 	console.log(playerId[playerId_index]);
@@ -77,8 +77,8 @@ io.on('connection', function(socket){
   		}
   		socket.to(playerId[0]).emit("tehai","ok");
   		socket.to("ton").emit("tehai",{
-  			tehai1 : ton_tehai[0],
-  			tehai2 : ton_tehai[1],
+  			"tehai1" : ton_tehai[0],
+  			"tehai2" : ton_tehai[1],
   			tehai3 : ton_tehai[2],
   			tehai4 : ton_tehai[3],
   			tehai5 : ton_tehai[4],
@@ -106,11 +106,39 @@ io.on('connection', function(socket){
   			tehai12 : nan_tehai[11],
   			tehai13 : nan_tehai[12],
   		});
-  		socket.to("nan").emit("tehai" , "you are nan");
+  		socket.to("sha").emit("sha",{
+  			tehai1 : sha_tehai[0],
+  			tehai2 : sha_tehai[1],
+  			tehai3 : sha_tehai[2],
+  			tehai4 : sha_tehai[3],
+  			tehai5 : sha_tehai[4],
+  			tehai6 : sha_tehai[5],
+  			tehai7 : sha_tehai[6],
+  			tehai8 : sha_tehai[7],
+  			tehai9 : sha_tehai[8],
+  			tehai10 : sha_tehai[9],
+  			tehai11 : sha_tehai[10],
+  			tehai12 : sha_tehai[11],
+  			tehai13 : sha_tehai[12],
+  		});
+  		socket.to("pei").emit("tehai",{
+  			tehai1 : pei_tehai[0],
+  			tehai2 : pei_tehai[1],
+  			tehai3 : pei_tehai[2],
+  			tehai4 : pei_tehai[3],
+  			tehai5 : pei_tehai[4],
+  			tehai6 : pei_tehai[5],
+  			tehai7 : pei_tehai[6],
+  			tehai8 : pei_tehai[7],
+  			tehai9 : pei_tehai[8],
+  			tehai10 : pei_tehai[9],
+  			tehai11 : pei_tehai[10],
+  			tehai12 : pei_tehai[11],
+  			tehai13 : pei_tehai[12],
+  		});
   		console.log("配牌完了！");
   	}
-  });
-  
+  });  
 });
 
 //http.listen(process.env.PORT||3000 , function(){
