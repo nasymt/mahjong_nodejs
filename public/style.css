@@ -43,3 +43,13 @@
 #tehai,img{
 	margin:5px  5px;
 }
+
+form#stage_top{
+	top:200px;
+}
+input#stage_top{
+	width:200px;
+	height:50px;
+	background-color:#666;
+	font-size:20px;
+}

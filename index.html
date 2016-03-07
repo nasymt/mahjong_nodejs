@@ -24,6 +24,8 @@
   <input type="submit" value="Send!">
   </form>  
 </div>
+<form id="game_start"></form>
+
 <form id="doHaipai3"></form>
 <form id="doHaipai4"></form>
 <div id="startWaiting">
@@ -31,29 +33,15 @@
 	<p>対局開始まで暫くお待ち下さい</p>
 </div>
 <!--------------プレイ画面----------------->
+<div id="this_kyoku"></div>
+<div id="your_turn"></div>
 <div id="tehai"><img  id="tehai_img1" src="./img/aka1-66-90-l.png"><img id="tehai_img2" src="./img/aka1-66-90-l.png"><img id="tehai_img3" src="./img/aka1-66-90-l.png"><img id="tehai_img4" src="./img/aka1-66-90-l.png"><img id="tehai_img5" src="./img/aka1-66-90-l.png"><img id="tehai_img6" src="./img/aka1-66-90-l.png"><img id="tehai_img7" src="./img/aka1-66-90-l.png"><img id="tehai_img8" src="./img/aka1-66-90-l.png"><img id="tehai_img9" src="./img/aka1-66-90-l.png"><img id="tehai_img10" src="./img/aka1-66-90-l.png"><img id="tehai_img11" src="./img/aka1-66-90-l.png"><img id="tehai_img12" src="./img/aka1-66-90-l.png"><img id="tehai_img13" src="./img/aka1-66-90-l.png"></div>
 
     <script src="//cdn.socket.io/socket.io-1.2.0.js"></script>
     <script src="//code.jquery.com/jquery-1.11.1.js"></script>
     <script>
-  
+//----------------------------javascript----------------------  
   var socket = io();
-  $('form').submit(function(){
-    socket.emit('chat message', $('#m').val());
-    $('#m').val('');
-    return false;
-  });
-  
-  $('#doHaipai3').submit(function(){
-  	socket.emit('haipai' , 0);
-  	console.log("3麻開始");
-  });
-  $('#doHaipai4').submit(function(){
-  	socket.emit('haipai' , 1);
-  	console.log("4麻開始");
-  });
-  
-  
   $('#setupForm').submit(function(e){
   	e.preventDefault();
   	socket.json.emit('setup',{
@@ -69,12 +57,42 @@
 	if(val=="stage"){
   		document.getElementById("doHaipai3").innerHTML+="<input type=\"submit\" value=\"配牌(3麻)\">";
   		document.getElementById("doHaipai4").innerHTML+="<input type=\"submit\" value=\"配牌(4麻)\">";
+  		document.getElementById("tehai").innerHTML="";
+  		/*document.getElementById("game_start").innerHTML += "親を選択してください。";
+  		document.getElementById("game_start").innerHTML += "<input type=\"submit\" value=\"東\">";
+  		document.getElementById("game_start").innerHTML += "<input type=\"submit\" value=\"南\">";
+  		document.getElementById("game_start").innerHTML += "<input type=\"submit\" value=\"西\">";
+  		document.getElementById("game_start").innerHTML += "<input type=\"submit\" value=\"北\">";*/
   	}
   });
   
-  socket.on('chat message', function(msg){
-    $('#messages').append($('<li>').text(msg));
+  $('#doHaipai3').submit(function(e){
+  	e.preventDefault();
+  	socket.emit('haipai' , 0);
+  	console.log("3麻開始");
+//  	document.getElementById("setupForm").innerHTML = "";
+   	document.getElementById("game_start").innerHTML = "<input type=\"submit\" value=\"対局開始\">";
+   	document.getElementById("doHaipai3").innerHTML = "";
+   	document.getElementById("doHaipai4").innerHTML = "";
   });
+  $('#doHaipai4').submit(function(e){
+  	e.preventDefault();
+  	socket.emit('haipai' , 1);
+  	console.log("4麻開始");
+   	document.getElementById("game_start").innerHTML = "<input type=\"submit\" value=\"対局開始\">";
+   	document.getElementById("doHaipai3").innerHTML = "";
+   	document.getElementById("doHaipai4").innerHTML = "";
+  });
+  $('#game_start').submit(function(e){
+  	e.preventDefault();
+  	socket.emit('tsumo' , 0);
+  	document.getElementById("game_start").innerHTML = "";
+  });
+  
+  var oya = 0;
+/*  $('#game_start').submit(function(){
+  	socket.emit('tsumo' , oya);
+  });*/
   socket.on('notice_bakaze' , function(msg){
 	document.getElementById("joinNum").innerHTML="<p id=\"joinNum\">現在の参加人数："+msg+"人</p>";
   });
@@ -94,16 +112,14 @@
   	myTehai[9]=msg.tehai10;
   	myTehai[10]=msg.tehai11;
   	myTehai[11]=msg.tehai12;
-  	myTehai[12]=msg.tehai13;
-  	//document.getElementById("tehai").innerHTML = "<p>"+msg.tehai1+":"+msg.tehai2+":"+msg.tehai3+":"+msg.tehai4+"</p>";
-  
-  	document.getElementById("tehai").innerHTML ="<div id=\"tehai\">";
+  	myTehai[12]=msg.tehai13;  
   	/*---------------------
   	0-35:マンズ 36-71:ピンズ 72-107:ソーズ 108-135:字牌
   	0~3:1 4~7: 2  8~11:3  12~15:4  16~19:5
   	36-39:_1 40-43:_2 44-47:_3 48-51:_4 52-55:_5 56
-  	
   	---------------------*/
+  	document.getElementById("startWaiting").innerHTML = "";
+  	document.getElementById("tehai").innerHTML ="<div id=\"tehai\">";
   	for(var i=0;i<13;i++){
   		var pai_img;
   		if(myTehai[i]>=0&&myTehai[i]<36){//マンズ
@@ -123,10 +139,13 @@
   		document.getElementById("tehai").innerHTML +="<img src=\"./img/"+pai_img+"\">";
 	}
 	document.getElementById("tehai").innerHTML +="</div>";
-  	
+  });
+  
+  socket.on('tsumo' , function(data){
+  	console.log("あなたのツモ牌です。"+data);
+  	document.getElementById("your_turn").innerHTML += "<p>あなたの番です</p>"
   });
   
 </script>
-
   </body>
 </html>
