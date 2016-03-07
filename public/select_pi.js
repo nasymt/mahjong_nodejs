@@ -9,6 +9,17 @@ $('#tehai_img1').click(function(e){
   	}
   	console.log("okokok");
   });
+$('#test1').click(function(e){
+  	e.preventDefault();
+  	selectPi(1);
+  	if(pre_select!=1)pre_select = 1;
+  	else {
+  		socket.emit('sutehai' , 0);
+  	}
+  	console.log("okokok");
+  });
+    
+  
   $('#tehai_img2').click(function(e){
   	e.preventDefault();
   	selectPi(2);
@@ -76,6 +87,10 @@ $('#tehai_img14').click(function(e){
 });
 
 function selectPi(pi){
+	if(pre_select!=pi)pre_select = pi;
+	else {
+		console.log("牌を捨てました:"+pi);
+	}
 	var c = '#tehai_img' + pi ;
 	for(var i=1;i<=14;i++){
 		var temp = '#tehai_img' + i;
@@ -84,7 +99,7 @@ function selectPi(pi){
 		});
 	}	
 	$(c).css({
-  		'background-color':'#FF0',
+//  		'background-color':'#FF0',
   		'border':'2px solid #F00'
   	});
 }
@@ -122,4 +137,8 @@ function selectPi(pi){
   		}
   	}
   	return n;
+  }
+  
+  function replaceHTML(){
+  	console.log("change!!!!!!");
   }

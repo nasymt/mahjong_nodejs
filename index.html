@@ -35,7 +35,25 @@
 <!--------------プレイ画面----------------->
 <div id="now_stage"></div>
 <div id="your_turn"></div>
-<div id="tehai"><img  id="tehai_img1" src="./img/aka1-66-90-l.png"><img id="tehai_img2" src="./img/aka1-66-90-l.png"><img id="tehai_img3" src="./img/aka1-66-90-l.png"><img id="tehai_img4" src="./img/aka1-66-90-l.png"><img id="tehai_img5" src="./img/aka1-66-90-l.png"><img id="tehai_img6" src="./img/aka1-66-90-l.png"><img id="tehai_img7" src="./img/aka1-66-90-l.png"><img id="tehai_img8" src="./img/aka1-66-90-l.png"><img id="tehai_img9" src="./img/aka1-66-90-l.png"><img id="tehai_img10" src="./img/aka1-66-90-l.png"><img id="tehai_img11" src="./img/aka1-66-90-l.png"><img id="tehai_img12" src="./img/aka1-66-90-l.png"><img id="tehai_img13" src="./img/aka1-66-90-l.png"></div>
+<!--
+<div id="tehai"><img  id="tehai_img1" src="./img/aka1-66-90-l.png"><img id="tehai_img2" src="./img/aka1-66-90-l.png"><img id="tehai_img3" src="./img/aka1-66-90-l.png"><img id="tehai_img4" src="./img/aka1-66-90-l.png"><img id="tehai_img5" src="./img/aka1-66-90-l.png"><img id="tehai_img6" src="./img/aka1-66-90-l.png"><img id="tehai_img7" src="./img/aka1-66-90-l.png"><img id="tehai_img8" src="./img/aka1-66-90-l.png"><img id="tehai_img9" src="./img/aka1-66-90-l.png"><img id="tehai_img10" src="./img/aka1-66-90-l.png"><img id="tehai_img11" src="./img/aka1-66-90-l.png"><img id="tehai_img12" src="./img/aka1-66-90-l.png"><img id="tehai_img13" src="./img/aka1-66-90-l.png"></div>-->
+
+<div id="tehai">
+<span id="tehai_img1"><img src="./img/aka1-66-90-l.png"></span>
+<span id="tehai_img2"><img src="./img/aka1-66-90-l.png"></span>
+<span id="tehai_img3"><img src="./img/aka1-66-90-l.png"></span>
+<span id="tehai_img4"><img src="./img/aka1-66-90-l.png"></span>
+<span id="tehai_img5"><img src="./img/aka1-66-90-l.png"></span>
+<span id="tehai_img6"><img src="./img/aka1-66-90-l.png"></span>
+<span id="tehai_img7"><img src="./img/aka1-66-90-l.png"></span>
+<span id="tehai_img8"><img src="./img/aka1-66-90-l.png"></span>
+<span id="tehai_img9"><img src="./img/aka1-66-90-l.png"></span>
+<span id="tehai_img10"><img src="./img/aka1-66-90-l.png"></span>
+<span id="tehai_img11"><img src="./img/aka1-66-90-l.png"></span>
+<span id="tehai_img12"><img src="./img/aka1-66-90-l.png"></span>
+<span id="tehai_img13"><img src="./img/aka1-66-90-l.png"></span>
+</div>
+
     <script src="//cdn.socket.io/socket.io-1.2.0.js"></script>
     <script src="//code.jquery.com/jquery-1.11.1.js"></script>
     <script type="text/javascript" src="./select_pi.js"></script>
@@ -131,25 +149,25 @@
   	36-39:_1 40-43:_2 44-47:_3 48-51:_4 52-55:_5 56
   	---------------------*/
   	document.getElementById("startWaiting").innerHTML = "";
-  	document.getElementById("tehai").innerHTML ="<div id=\"tehai\">";
-	myTehai = sortPi(myTehai);
-  	
+//  	document.getElementById("tehai").innerHTML ="<div id=\"tehai\">";
+	myTehai = sortPi(myTehai);	
   	for(var i=0;i<13;i++){
 		var temp = createPiAddr(myTehai[i]);
 		var pai_img = temp.addr;
 		myTehai_type[i] = temp.type;
   		console.log(i+":"+pai_img+":"+myTehai[i]+":"+myTehai_type[i]);
-  		document.getElementById("tehai").innerHTML +="<img src=\"./img/"+pai_img+"\">";
+  		//document.getElementById("tehai").innerHTML +="<img src=\"./img/"+pai_img+"\">";
+  		var tmp = i+1;
+  		document.getElementById("tehai_img"+tmp).innerHTML = "<img src=\"./img/"+pai_img+"\" onClick=\"selectPi("+tmp+");\">";
 	}
-	document.getElementById("tehai").innerHTML +="</div>";
+//	document.getElementById("tehai").innerHTML +="</div>";
   });
   
   socket.on('tsumo' , function(data){
   	console.log("あなたのツモ牌です。"+data);
   	document.getElementById("your_turn").innerHTML += "<p>あなたの番です</p>";
   	var now_pi = createPiAddr(data);
-  	
-  	document.getElementById("tehai").innerHTML += "<img id=\"tehai_img14\" src=\"./img/"+now_pi.addr+"\">";
+  	document.getElementById("tehai").innerHTML += "<img id=\"tehai_img14\" src=\"./img/"+now_pi.addr+"\" onClick=\"selectPi(14)\">";
   });
   
 
