@@ -33,12 +33,12 @@
 	<p>対局開始まで暫くお待ち下さい</p>
 </div>
 <!--------------プレイ画面----------------->
-<div id="this_kyoku"></div>
+<div id="now_stage"></div>
 <div id="your_turn"></div>
 <div id="tehai"><img  id="tehai_img1" src="./img/aka1-66-90-l.png"><img id="tehai_img2" src="./img/aka1-66-90-l.png"><img id="tehai_img3" src="./img/aka1-66-90-l.png"><img id="tehai_img4" src="./img/aka1-66-90-l.png"><img id="tehai_img5" src="./img/aka1-66-90-l.png"><img id="tehai_img6" src="./img/aka1-66-90-l.png"><img id="tehai_img7" src="./img/aka1-66-90-l.png"><img id="tehai_img8" src="./img/aka1-66-90-l.png"><img id="tehai_img9" src="./img/aka1-66-90-l.png"><img id="tehai_img10" src="./img/aka1-66-90-l.png"><img id="tehai_img11" src="./img/aka1-66-90-l.png"><img id="tehai_img12" src="./img/aka1-66-90-l.png"><img id="tehai_img13" src="./img/aka1-66-90-l.png"></div>
-
     <script src="//cdn.socket.io/socket.io-1.2.0.js"></script>
     <script src="//code.jquery.com/jquery-1.11.1.js"></script>
+    <script type="text/javascript" src="./select_pi.js"></script>
     <script>
 //----------------------------javascript----------------------  
   var socket = io();
@@ -58,11 +58,6 @@
   		document.getElementById("doHaipai3").innerHTML+="<input type=\"submit\" value=\"配牌(3麻)\">";
   		document.getElementById("doHaipai4").innerHTML+="<input type=\"submit\" value=\"配牌(4麻)\">";
   		document.getElementById("tehai").innerHTML="";
-  		/*document.getElementById("game_start").innerHTML += "親を選択してください。";
-  		document.getElementById("game_start").innerHTML += "<input type=\"submit\" value=\"東\">";
-  		document.getElementById("game_start").innerHTML += "<input type=\"submit\" value=\"南\">";
-  		document.getElementById("game_start").innerHTML += "<input type=\"submit\" value=\"西\">";
-  		document.getElementById("game_start").innerHTML += "<input type=\"submit\" value=\"北\">";*/
   	}
   });
   
@@ -83,16 +78,33 @@
    	document.getElementById("doHaipai3").innerHTML = "";
    	document.getElementById("doHaipai4").innerHTML = "";
   });
-  $('#game_start').submit(function(e){
-  	e.preventDefault();
-  	socket.emit('tsumo' , 0);
-  	document.getElementById("game_start").innerHTML = "";
-  });
+  
   
   var oya = 0;
-/*  $('#game_start').submit(function(){
+  var now_stage = 0;
+  $('#game_start').submit(function(e){
+  	e.preventDefault();
   	socket.emit('tsumo' , oya);
-  });*/
+  	document.getElementById("game_start").innerHTML = "";
+  	var now_stage_char;
+  	switch(now_stage){
+  		case 0:
+  			now_stage_char = "東一局";
+  			break;
+  		case 1:
+  			now_stage_char = "東二局";
+  			break;
+  		case 2:
+  			now_stage_char = "東三局";
+  			break;
+  		case 3:
+  			now_stage_char = "東四局";
+  			break;
+  	}
+  	document.getElementById("now_stage").innerHTML = "<p>"+now_stage_char+"</p>";
+  });
+  
+
   socket.on('notice_bakaze' , function(msg){
 	document.getElementById("joinNum").innerHTML="<p id=\"joinNum\">現在の参加人数："+msg+"人</p>";
   });
@@ -120,21 +132,12 @@
   	---------------------*/
   	document.getElementById("startWaiting").innerHTML = "";
   	document.getElementById("tehai").innerHTML ="<div id=\"tehai\">";
+	myTehai = sortPi(myTehai);
+  	
   	for(var i=0;i<13;i++){
-  		var pai_img;
-  		if(myTehai[i]>=0&&myTehai[i]<36){//マンズ
-  			myTehai_type[i]=Math.floor((myTehai[i])/4)+1;
-  			pai_img = "man" + myTehai_type[i] + "-66-90-l.png";
-  		}else if(myTehai[i]>=36&&myTehai[i]<72){//ピンズ
-  			myTehai_type[i] = Math.floor((myTehai[i]-36)/4)+1;
-  			pai_img = "pin" + myTehai_type[i] + "-66-90-l.png";
-  		}else if(myTehai[i]>=72&&myTehai[i]<108){//ソーズ
-  			myTehai_type[i] = Math.floor((myTehai[i]-72)/4)+1;
-  			pai_img = "sou" + myTehai_type[i] + "-66-90-l.png";
-  		}else if(myTehai[i]>=108&&myTehai[i]<136){//字牌
-  			myTehai_type[i] = Math.floor((myTehai[i]-108)/4)+1;
-  			pai_img = "ji" + myTehai_type[i] + "-66-90-l.png";
-  		}
+		var temp = createPiAddr(myTehai[i]);
+		var pai_img = temp.addr;
+		myTehai_type[i] = temp.type;
   		console.log(i+":"+pai_img+":"+myTehai[i]+":"+myTehai_type[i]);
   		document.getElementById("tehai").innerHTML +="<img src=\"./img/"+pai_img+"\">";
 	}
@@ -143,8 +146,13 @@
   
   socket.on('tsumo' , function(data){
   	console.log("あなたのツモ牌です。"+data);
-  	document.getElementById("your_turn").innerHTML += "<p>あなたの番です</p>"
+  	document.getElementById("your_turn").innerHTML += "<p>あなたの番です</p>";
+  	var now_pi = createPiAddr(data);
+  	
+  	document.getElementById("tehai").innerHTML += "<img id=\"tehai_img14\" src=\"./img/"+now_pi.addr+"\">";
   });
+  
+
   
 </script>
   </body>

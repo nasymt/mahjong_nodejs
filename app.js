@@ -20,7 +20,7 @@ io.on('connection', function(socket){
   	socket.join(data.room);
 	playerId[playerId_index] = socket.id;
 	if(playerId_index<4)playerId_index++;
-	console.log(playerId[playerId_index]);
+	//console.log(playerId[playerId_index]);
   	playerNum++;
   	var baName;
   	switch(data.room){
