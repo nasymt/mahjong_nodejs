@@ -13,7 +13,7 @@
   
  <!--//-----TOP画面---------->
  <div id="top">
-<form id="setupForm" name="setupFormName">
+<!--<form id="setupForm" name="setupFormName">
   <select id="bakaze" name="bakazeName">
   	<option value="ton">東</option>
   	<option value="nan">南</option>
@@ -21,8 +21,16 @@
   	<option value="pei">北</option>
   	<option value="stage">ステージ</option>
   </select>  
-  <input type="submit" value="Send!">
-  </form>  
+  <input type="submit" value="Send!">  
+  </form>  -->
+    <div id="selectKaze">
+  	<div id="ton" onClick="setup(0);">東</div>
+  	<div id="nan" onClick="setup(1);">南</div>
+  	<div id="sha" onClick="setup(2);">西</div>
+  	<div id="pei" onClick="setup(3);">北</div>
+  	<div id="stage" onClick="setup(4);">ステージ</div>
+  </div>
+
 </div>
 <form id="game_start"></form>
 
@@ -35,24 +43,32 @@
 <!--------------プレイ画面----------------->
 <div id="now_stage"></div>
 <div id="your_turn"></div>
-<!--
-<div id="tehai"><img  id="tehai_img1" src="./img/aka1-66-90-l.png"><img id="tehai_img2" src="./img/aka1-66-90-l.png"><img id="tehai_img3" src="./img/aka1-66-90-l.png"><img id="tehai_img4" src="./img/aka1-66-90-l.png"><img id="tehai_img5" src="./img/aka1-66-90-l.png"><img id="tehai_img6" src="./img/aka1-66-90-l.png"><img id="tehai_img7" src="./img/aka1-66-90-l.png"><img id="tehai_img8" src="./img/aka1-66-90-l.png"><img id="tehai_img9" src="./img/aka1-66-90-l.png"><img id="tehai_img10" src="./img/aka1-66-90-l.png"><img id="tehai_img11" src="./img/aka1-66-90-l.png"><img id="tehai_img12" src="./img/aka1-66-90-l.png"><img id="tehai_img13" src="./img/aka1-66-90-l.png"></div>-->
-
 <div id="tehai">
-<span id="tehai_img1"><img src="./img/aka1-66-90-l.png"></span>
-<span id="tehai_img2"><img src="./img/aka1-66-90-l.png"></span>
-<span id="tehai_img3"><img src="./img/aka1-66-90-l.png"></span>
-<span id="tehai_img4"><img src="./img/aka1-66-90-l.png"></span>
-<span id="tehai_img5"><img src="./img/aka1-66-90-l.png"></span>
-<span id="tehai_img6"><img src="./img/aka1-66-90-l.png"></span>
-<span id="tehai_img7"><img src="./img/aka1-66-90-l.png"></span>
-<span id="tehai_img8"><img src="./img/aka1-66-90-l.png"></span>
-<span id="tehai_img9"><img src="./img/aka1-66-90-l.png"></span>
-<span id="tehai_img10"><img src="./img/aka1-66-90-l.png"></span>
-<span id="tehai_img11"><img src="./img/aka1-66-90-l.png"></span>
-<span id="tehai_img12"><img src="./img/aka1-66-90-l.png"></span>
-<span id="tehai_img13"><img src="./img/aka1-66-90-l.png"></span>
+<span id="tehai_img1"></span>
+<span id="tehai_img2"></span>
+<span id="tehai_img3"></span>
+<span id="tehai_img4"></span>
+<span id="tehai_img5"></span>
+<span id="tehai_img6"></span>
+<span id="tehai_img7"></span>
+<span id="tehai_img8"></span>
+<span id="tehai_img9"></span>
+<span id="tehai_img10"></span>
+<span id="tehai_img11"></span>
+<span id="tehai_img12"></span>
+<span id="tehai_img13"></span>
+<span id="tehai_img14"></span>
 </div>
+<div id="ton_sutehai"></div>
+<div id="nan_sutehai"></div>
+<div id="sha_sutehai"></div>
+<div id="pei_sutehai"></div>
+
+<div id="chi"></div>
+<div id="pon"></div>
+<div id="kan"></div>
+<div id="ron"></div>
+<div id="pass"></div>
 
     <script src="//cdn.socket.io/socket.io-1.2.0.js"></script>
     <script src="//code.jquery.com/jquery-1.11.1.js"></script>
@@ -60,7 +76,7 @@
     <script>
 //----------------------------javascript----------------------  
   var socket = io();
-  $('#setupForm').submit(function(e){
+/*  $('#setupForm').submit(function(e){
   	e.preventDefault();
   	socket.json.emit('setup',{
   		room:$('#bakaze').val()	
@@ -77,25 +93,74 @@
   		document.getElementById("doHaipai4").innerHTML+="<input type=\"submit\" value=\"配牌(4麻)\">";
   		document.getElementById("tehai").innerHTML="";
   	}
-  });
-  
+  });*/
+  function setup(data){
+  	var data_char;
+  	if(data==0)data_char = "ton";
+  	else if(data==1)data_char = "nan";
+  	else if(data==2)data_char = "sha";
+  	else if(data==3)data_char = "pei";
+  	else if(data==4)data_char = "stage";
+  	
+  	socket.json.emit('setup',{
+  		room:data_char
+  	});
+  	var temp;
+  	switch(data){
+  		case 0:
+  			temp = "東";
+  			break;
+  		case 1:
+  			temp = "南";
+  			break;
+  		case 2:
+  			temp = "西";
+  			break;
+  		case 3:
+  			temp = "北";
+  			break;
+  		case 4:
+  			temp = "ステージ";
+  			break;
+  	}
+  	document.getElementById("selectKaze").innerHTML="<p></p>";
+  	document.getElementById("yourKaze").innerHTML = "<p>あなたは"+temp+"家です。</p>";
+  	if(data==4){
+  		document.getElementById("doHaipai3").innerHTML+="<input type=\"submit\" value=\"配牌(3麻)\">";
+  		document.getElementById("doHaipai4").innerHTML+="<input type=\"submit\" value=\"配牌(4麻)\">";
+  		document.getElementById("tehai").innerHTML="";
+  	}
+  }
   $('#doHaipai3').submit(function(e){
   	e.preventDefault();
+  	stage_setHTML();
   	socket.emit('haipai' , 0);
   	console.log("3麻開始");
-//  	document.getElementById("setupForm").innerHTML = "";
-   	document.getElementById("game_start").innerHTML = "<input type=\"submit\" value=\"対局開始\">";
-   	document.getElementById("doHaipai3").innerHTML = "";
-   	document.getElementById("doHaipai4").innerHTML = "";
   });
   $('#doHaipai4').submit(function(e){
   	e.preventDefault();
-  	socket.emit('haipai' , 1);
+  	stage_setHTML();
+   	socket.emit('haipai' , 1);
   	console.log("4麻開始");
-   	document.getElementById("game_start").innerHTML = "<input type=\"submit\" value=\"対局開始\">";
+  });
+  
+  function stage_setHTML(){
    	document.getElementById("doHaipai3").innerHTML = "";
    	document.getElementById("doHaipai4").innerHTML = "";
-  });
+   	document.getElementById("ton_sutehai").innerHTML = "<p>東</p>";
+   	document.getElementById("nan_sutehai").innerHTML = "<p>南</p>";
+   	document.getElementById("sha_sutehai").innerHTML = "<p>西</p>";
+   	document.getElementById("pei_sutehai").innerHTML = "<p>北</p>";
+   	document.getElementById("startWaiting").innerHTML = "";
+   	var temp = ["#ton_sutehai","#nan_sutehai","#sha_sutehai","#pei_sutehai"];
+   	for(var i=0;i<4;i++){
+   		$(temp[i]).css({
+   			'border':'4px solid #F00'
+   		});
+   	}
+   	console.log("ok");
+   	document.getElementById("game_start").innerHTML = "<input type=\"submit\" value=\"対局開始\">";
+  }
   
   
   var oya = 0;
@@ -130,6 +195,7 @@
   var myTehai = new Array(14);
   var myTehai_type = new Array(14);
   socket.on('tehai' , function(msg){
+  	console.log("comon");
   	myTehai[0]=msg.tehai1;
   	myTehai[1]=msg.tehai2;
   	myTehai[2]=msg.tehai3;
@@ -149,25 +215,68 @@
   	36-39:_1 40-43:_2 44-47:_3 48-51:_4 52-55:_5 56
   	---------------------*/
   	document.getElementById("startWaiting").innerHTML = "";
-//  	document.getElementById("tehai").innerHTML ="<div id=\"tehai\">";
-	myTehai = sortPi(myTehai);	
+  	document.getElementById("chi").innerHTML ="<p>チー</p>";
+  	document.getElementById("pon").innerHTML = "<p>ポン</p>";
+  	document.getElementById("kan").innerHTML = "<p>カン</p>";
+  	document.getElementById("ron").innerHTML = "<p>ロン</p>";
+  	document.getElementById("pass").innerHTML = "<p onClick=\"doPass();\">パス</p>";
+  	var button_char = ["#chi","#pon","#kan","#ron","#pass"];
+  	for(var i=0;i<5;i++){
+  		$(button_char[i]).css({
+  			'background-color':'#F00',
+  			'opacity':'0.3'
+  		});
+  	}  	
+  	
+  	
+	myTehai = sortPi(myTehai);
   	for(var i=0;i<13;i++){
 		var temp = createPiAddr(myTehai[i]);
 		var pai_img = temp.addr;
 		myTehai_type[i] = temp.type;
   		console.log(i+":"+pai_img+":"+myTehai[i]+":"+myTehai_type[i]);
-  		//document.getElementById("tehai").innerHTML +="<img src=\"./img/"+pai_img+"\">";
   		var tmp = i+1;
-  		document.getElementById("tehai_img"+tmp).innerHTML = "<img src=\"./img/"+pai_img+"\" onClick=\"selectPi("+tmp+");\">";
+  		document.getElementById("tehai_img"+tmp).innerHTML = "<img src=\"./img/"+pai_img+"\" onClick=\"selectPi("+tmp+","+myTehai[i]+");\">";
 	}
-//	document.getElementById("tehai").innerHTML +="</div>";
   });
   
+  //--------------ツモ--------------------------
   socket.on('tsumo' , function(data){
   	console.log("あなたのツモ牌です。"+data);
   	document.getElementById("your_turn").innerHTML += "<p>あなたの番です</p>";
   	var now_pi = createPiAddr(data);
-  	document.getElementById("tehai").innerHTML += "<img id=\"tehai_img14\" src=\"./img/"+now_pi.addr+"\" onClick=\"selectPi(14)\">";
+  	myTehai[13] = data;
+  	document.getElementById("tehai_img14").innerHTML += "<img src=\"./img/"+now_pi.addr+"\" onClick=\"selectPi(14,"+data+")\">";
+  });
+  function doPass(){
+  	console.log("doPass");
+  	socket.emit('pass',1);
+  }
+  //---------------捨て牌処理-------------------
+  socket.on('sutehai' , function(data){
+  	var pai = createPiAddr(data.index);
+  	console.log("sutehai:"+pai.addr);
+  	switch(data.player){
+  		case 0:
+  			document.getElementById("ton_sutehai").innerHTML += "<img src=\"./img/"+pai.addr+"\">";
+  			break;
+  		case 1:
+  			document.getElementById("nan_sutehai").innerHTML += "<img src=\"./img/"+pai.addr+"\">";
+  			break;
+  		case 2:
+  			document.getElementById("sha_sutehai").innerHTML += "<img src=\"./img/"+pai.addr+"\">";
+  			break;
+  		case 3:
+  			document.getElementById("pei_sutehai").innerHTML += "<img src=\"./img/"+pai.addr+"\">";
+  			break;
+  	}
+  });
+  
+  socket.on('canPass',function(data){
+  	console.log("youcanPass");
+  	$('#pass').css({
+  		'opacity':'1.0'
+  	});
   });
   
 

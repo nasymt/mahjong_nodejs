@@ -15,7 +15,23 @@ app.use(express.static('public'));
 var playerId=new Array(4);
 var playerId_index;
 var playerNum=0;
-io.on('connection', function(socket){  
+var bPass = false;
+var ton_tehai = new Array(14),
+  nan_tehai = new Array(14),
+  sha_tehai = new Array(14),
+  pei_tehai = new Array(14),
+  ton_sutehai = new Array(30),
+  nan_sutehai = new Array(30),
+  sha_sutehai = new Array(30),
+  pei_sutehai = new Array(30),
+  ton_trash_index,nan_trash_index,sha_trash_index,pei_trash_index;
+  
+  var used_index = 0;
+  var all_pai = [];
+  var now_turn = 0;
+  var player_num = 0;
+io.on('connection', function(socket){
+//-------------------セットアップ--------------
   socket.on('setup',function(data){
   	socket.join(data.room);
 	playerId[playerId_index] = socket.id;
@@ -42,15 +58,12 @@ io.on('connection', function(socket){
   	}
 	io.sockets.emit('notice_bakaze', playerNum);
   	console.log("あなたは"+baName+"です。参加人数:"+playerNum+"人");
-  });
-  
-  var ton_tehai = new Array(14),
-  nan_tehai = new Array(14),
-  sha_tehai = new Array(14),
-  pei_tehai = new Array(14);
-  var used_index = 0;
-  var all_pai = [];
-  socket.on('haipai',function(data){//配牌を行う
+  }); 
+  //--------------配牌-----------------------
+  socket.on('haipai',function(data){
+  	console.log("---");
+  	if(data == 0)player_num=3;
+  	else player_num=4;
   	for (var i=0; i<136;i++){
   		all_pai[i] = i;
   	}
@@ -120,16 +133,21 @@ io.on('connection', function(socket){
   		tehai12 : pei_tehai[11],
   		tehai13 : pei_tehai[12],
   	});
-  	console.log("配牌完了！");
+  	//console.log("配牌完了！");
   });  
+  //--------------ツモ-----------------------
   socket.on('tsumo' , function(data){
-  	console.log("first tsumo!!");
-  	switch(data){
+  	tsumo(data);
+  });
+  function tsumo(data){
+    	switch(data){
   		case 0:
   			socket.to("ton").emit('tsumo' , all_pai[used_index+1]);
+  			console.log("東　ツモemit");
   			break;
   		case 1:
   			socket.to("nan").emit('tsumo' , all_pai[used_index+1]);
+  			console.log("南　ツモemit");
   			break;
   		case 2:
   			socket.to("sha").emit('tsumo' , all_pai[used_index+1]);
@@ -138,8 +156,75 @@ io.on('connection', function(socket){
   			socket.to("pei").emit('tsumo' , all_pai[used_index+1]);
   			break;
   	}
+  }
+ //--------------捨て牌処理---------------------
+  socket.on('sutehai',function(data){  	
+  	switch(now_turn){
+  		case 0:
+  			ton_sutehai[ton_trash_index] = data;
+  			ton_trash_index++;
+  			socket.to("stage").emit('sutehai',{
+  				index : data,
+  				player : 0
+  			});
+  			break;
+  		case 1:
+  			nan_sutehai[nan_trash_index] = data;
+  			nan_trash_index++;
+  			socket.to("stage").emit('sutehai',{
+  				index : data,
+  				player : 1
+  			});
+  			break;
+  		case 2:
+  			sha_sutehai[sha_trash_index] = data;
+  			sha_trash_index++;
+  			socket.to("stage").emit('sutehai',{
+  				index : data,
+  				player : 2
+  			});
+  			break;
+  		case 3:
+  			pei_sutehai[pei_trash_index] = data;
+  			pei_trash_index++;
+  			socket.to("stage").emit('sutehai',{
+  				index : data,
+  				player : 3
+  			});
+  			break;
+  	}
+  	bPass = true;
+  	console.log("bPass:"+bPass);
+  	socket.broadcast.emit('canPass',1);
+  	/*if(now_turn<3){
+  		now_turn++;
+  	}else{
+  		now_turn = 0;
+  	}*/
+  });
+  //-----------パス時の処理--------------------
+  var pass_count = 0;
+  socket.on('pass',function(data){
+  	console.log("pass1:"+bPass);
+  	if(bPass){
+  		console.log("pass2");
+  		if(pass_count<player_num-2){
+  			pass_count++;
+  		}else{
+  			if(now_turn<3)now_turn++;
+  			else now_turn=0;
+  			bPass=false;
+  			pass_count=0;
+  			console.log("NEXT TSUMO:"+now_turn);	
+  			tsumo(now_turn);
+	
+  		}
+  	}
   });
 });
+
+
+
 
 //http.listen(process.env.PORT||3000 , function(){
 http.listen(3000 , function(){

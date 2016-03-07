@@ -1,94 +1,18 @@
 var pre_select =0;
-
-$('#tehai_img1').click(function(e){
-  	e.preventDefault();
-  	selectPi(1);
-  	if(pre_select!=1)pre_select = 1;
-  	else {
-  		socket.emit('sutehai' , 0);
-  	}
-  	console.log("okokok");
-  });
-$('#test1').click(function(e){
-  	e.preventDefault();
-  	selectPi(1);
-  	if(pre_select!=1)pre_select = 1;
-  	else {
-  		socket.emit('sutehai' , 0);
-  	}
-  	console.log("okokok");
-  });
-    
-  
-  $('#tehai_img2').click(function(e){
-  	e.preventDefault();
-  	selectPi(2);
-  	pre_select = 2;
-  });
-  $('#tehai_img3').click(function(e){
-  	e.preventDefault();
-  	selectPi(3);
-  	pre_select = 3;
-  });
-  $('#tehai_img4').click(function(e){
-  	e.preventDefault();
-  	selectPi(4);
-  	pre_select = 4;
-  });
-  $('#tehai_img5').click(function(e){
-  	e.preventDefault();
-  	selectPi(5);
-  	pre_select = 5;
-  });
-$('#tehai_img6').click(function(e){
-	e.preventDefault();
-	selectPi(6);
-  	pre_select = 6;
-});
-$('#tehai_img7').click(function(e){
-	e.preventDefault();
-	selectPi(7);
-  	pre_select = 7;
-});
-$('#tehai_img8').click(function(e){
-	e.preventDefault();
-	selectPi(8);
-  	pre_select = 8;
-});
-$('#tehai_img9').click(function(e){
-	e.preventDefault();
-	selectPi(9);
-  	pre_select = 9;
-});
-$('#tehai_img10').click(function(e){
-	e.preventDefault();
-	selectPi(10);
-  	pre_select = 10;
-});
-$('#tehai_img11').click(function(e){
-	e.preventDefault();
-	selectPi(11);
-  	pre_select = 11;
-});
-$('#tehai_img12').click(function(e){
-	e.preventDefault();
-	selectPi(12);
-  	pre_select = 12;
-});
-$('#tehai_img13').click(function(e){
-	e.preventDefault();
-	selectPi(13);
-  	pre_select = 13;
-});
-$('#tehai_img14').click(function(e){
-	e.preventDefault();
-	selectPi(14);
-  	pre_select = 14;
-});
-
-function selectPi(pi){
+function selectPi(pi,sute){
 	if(pre_select!=pi)pre_select = pi;
 	else {
+		socket.emit('sutehai',sute);
+		myTehai.splice(pi-1,1);		
+		myTehai = sortPi(myTehai);
+		for(var i=0;i<13;i++){
+			var temp = createPiAddr(myTehai[i]);
+			var pai_img = temp.addr;
+			myTehai_type[i] = temp.type;
+			var tmp = i+1;
+  			document.getElementById("tehai_img"+tmp).innerHTML = "<img src=\"./img/"+pai_img+"\" onClick=\"selectPi("+tmp+");\">";
+		}
+		document.getElementById("tehai_img14").innerHTML = "";
 		console.log("牌を捨てました:"+pi);
 	}
 	var c = '#tehai_img' + pi ;
@@ -139,6 +63,3 @@ function selectPi(pi){
   	return n;
   }
   
-  function replaceHTML(){
-  	console.log("change!!!!!!");
-  }
