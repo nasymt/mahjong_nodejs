@@ -63,7 +63,9 @@
 <div id="nan_sutehai"></div>
 <div id="sha_sutehai"></div>
 <div id="pei_sutehai"></div>
-<div id="stage_monitor"></div>
+<div id="stage_monitor">
+<div id="nokori"></div>
+</div>
 
 <div id="chi"></div>
 <div id="pon"></div>
@@ -147,6 +149,16 @@
    	socket.emit('haipai' , 1);
   	console.log("4麻開始");
   });
+  socket.on('stage_set',function(dora){
+  	var temp = createPiAddr(dora);
+  	console.log("get"+dora);
+  	document.getElementById("stage_monitor").innerHTML +="<p>ドラ<img src=\"./img/"+temp.addr+"\"></p>";
+  	document.getElementById("nokori").innerHTML ="<p>残 69 牌</p>";
+  });
+  socket.on('stage_update',function(data){
+  	document.getElementById("nokori").innerHTML = "<p>残 "+data+" 牌</p>";
+  });
+  
   
   function stage_setHTML(){
    	document.getElementById("doHaipai3").innerHTML = "";
@@ -166,11 +178,11 @@
    	document.getElementById("game_start").innerHTML = "<input type=\"submit\" value=\"対局開始\">";
   }
   
-  var oya = 0;
+//  var oya = 0;
   var now_stage = 0;
   $('#game_start').submit(function(e){
   	e.preventDefault();
-  	socket.emit('tsumo' , oya);
+  	socket.emit('start' , 0);  	
   	document.getElementById("game_start").innerHTML = "";
   	var now_stage_char;
   	switch(now_stage){
@@ -218,10 +230,10 @@
   	36-39:_1 40-43:_2 44-47:_3 48-51:_4 52-55:_5 56
   	---------------------*/
   	document.getElementById("startWaiting").innerHTML = "";
-  	document.getElementById("chi").innerHTML ="<p>チー</p>";
-  	document.getElementById("pon").innerHTML = "<p>ポン</p>";
-  	document.getElementById("kan").innerHTML = "<p>カン</p>";
-  	document.getElementById("ron").innerHTML = "<p>ロン</p>";
+  	document.getElementById("chi").innerHTML ="<p onClick=\"doChi();\">チー</p>";
+  	document.getElementById("pon").innerHTML = "<p onClick=\"doPon();\">ポン</p>";
+  	document.getElementById("kan").innerHTML = "<p onClick=\"doKan();\">カン</p>";
+  	document.getElementById("ron").innerHTML = "<p onClick=\"doRon();\">ロン</p>";
   	document.getElementById("pass").innerHTML = "<p onClick=\"doPass();\">パス</p>";
   	var button_char = ["#chi","#pon","#kan","#ron","#pass"];
   	for(var i=0;i<5;i++){
@@ -256,17 +268,38 @@
   socket.on('now_turn',function(data){
   	now_turn = data;
   });
+  //-----------チー・ポン・カン・ロン----------
   function doPass(){
-  	console.log("doPass");
   	$('#pass').css({
   		'opacity':'0.3'
   	});
   	socket.emit('pass',your_kaze);
   }
+  function doChi(){
+  	$('#chi').css({
+  		'opacity':'0.3'
+  	});
+	socket.emit('chi',{
+		turn : now_turn,
+		player : your_kaze
+	});
+  }
+  function doPon(){
+  }
+  function doKan(){
+  }
+  function doRon(){
+  }
   //---------------捨て牌処理-------------------
   socket.on('sutehai' , function(data){
   	var pai = createPiAddr(data.index);
   	console.log("sutehai:"+pai.addr);
+  	if(data.chipon){
+  		var temp = ["ton_sutehai" , "nan_sutehai" , "sha_sutehai" , "pei_sutehai"];
+  		var element = document.getElementById(temp[data._now_turn]);
+  		element.removeChild(element.lastChild);
+  		console.log("REMOVE");
+  	}
   	switch(data.player){
   		case 0:
   			document.getElementById("ton_sutehai").innerHTML += "<img src=\"./img/"+pai.addr+"\">";
@@ -284,8 +317,17 @@
   });
   
   socket.on('canPass',function(data){
-  	console.log("youcanPass");
   	$('#pass').css({
+  		'opacity':'1.0'
+  	});
+  });
+  socket.on('canChi' , function(data){
+  	$('#chi').css({
+  		'opacity':'1.0'
+  	});
+  });
+  socket.on('canPon' , function(data){
+  	$('#pon').css({
   		'opacity':'1.0'
   	});
   });
@@ -294,9 +336,6 @@
   	document.getElementById("your_turn").innerHTML = "";
   	console.log("turn_end");
   });
-/*  socket.on('hello' , function(data){
-  	console.log("hello~~"+data);
-  });*/
   
 
   
