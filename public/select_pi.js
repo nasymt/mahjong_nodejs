@@ -2,18 +2,21 @@ var pre_select =0;
 function selectPi(pi,sute){
 	if(pre_select!=pi)pre_select = pi;
 	else {
-		socket.emit('sutehai',sute);
-		myTehai.splice(pi-1,1);		
-		myTehai = sortPi(myTehai);
-		for(var i=0;i<13;i++){
-			var temp = createPiAddr(myTehai[i]);
-			var pai_img = temp.addr;
-			myTehai_type[i] = temp.type;
-			var tmp = i+1;
-  			document.getElementById("tehai_img"+tmp).innerHTML = "<img src=\"./img/"+pai_img+"\" onClick=\"selectPi("+tmp+");\">";
+		if(bTrash){
+			socket.emit('sutehai',sute);
+			myTehai.splice(pi-1,1);		
+			myTehai = sortPi(myTehai);
+			for(var i=0;i<13;i++){
+				var temp = createPiAddr(myTehai[i]);
+				var pai_img = temp.addr;
+				myTehai_type[i] = temp.type;
+				var tmp = i+1;
+  				document.getElementById("tehai_img"+tmp).innerHTML = "<img src=\"./img/"+pai_img+"\" onClick=\"selectPi("+tmp+");\">";
+			}
+			document.getElementById("tehai_img14").innerHTML = "";
+			console.log("牌を捨てました:"+pi);
+			bTrash=false;
 		}
-		document.getElementById("tehai_img14").innerHTML = "";
-		console.log("牌を捨てました:"+pi);
 	}
 	var c = '#tehai_img' + pi ;
 	for(var i=1;i<=14;i++){

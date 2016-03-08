@@ -63,6 +63,7 @@
 <div id="nan_sutehai"></div>
 <div id="sha_sutehai"></div>
 <div id="pei_sutehai"></div>
+<div id="stage_monitor"></div>
 
 <div id="chi"></div>
 <div id="pon"></div>
@@ -94,8 +95,11 @@
   		document.getElementById("tehai").innerHTML="";
   	}
   });*/
+  var your_kaze=0;
+  var now_turn=0;
   function setup(data){
   	var data_char;
+  	your_kaze=data;
   	if(data==0)data_char = "ton";
   	else if(data==1)data_char = "nan";
   	else if(data==2)data_char = "sha";
@@ -161,7 +165,6 @@
    	console.log("ok");
    	document.getElementById("game_start").innerHTML = "<input type=\"submit\" value=\"対局開始\">";
   }
-  
   
   var oya = 0;
   var now_stage = 0;
@@ -241,16 +244,24 @@
   });
   
   //--------------ツモ--------------------------
+  var bTrash = false;
   socket.on('tsumo' , function(data){
   	console.log("あなたのツモ牌です。"+data);
   	document.getElementById("your_turn").innerHTML += "<p>あなたの番です</p>";
   	var now_pi = createPiAddr(data);
   	myTehai[13] = data;
   	document.getElementById("tehai_img14").innerHTML += "<img src=\"./img/"+now_pi.addr+"\" onClick=\"selectPi(14,"+data+")\">";
+  	bTrash = true;
+  });
+  socket.on('now_turn',function(data){
+  	now_turn = data;
   });
   function doPass(){
   	console.log("doPass");
-  	socket.emit('pass',1);
+  	$('#pass').css({
+  		'opacity':'0.3'
+  	});
+  	socket.emit('pass',your_kaze);
   }
   //---------------捨て牌処理-------------------
   socket.on('sutehai' , function(data){
@@ -278,6 +289,14 @@
   		'opacity':'1.0'
   	});
   });
+  
+  socket.on('turn_end',function(data){
+  	document.getElementById("your_turn").innerHTML = "";
+  	console.log("turn_end");
+  });
+/*  socket.on('hello' , function(data){
+  	console.log("hello~~"+data);
+  });*/
   
 
   
