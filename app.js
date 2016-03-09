@@ -18,8 +18,8 @@ var ton_tehai = new Array(14),
   nan_tehai = new Array(14),
   sha_tehai = new Array(14),
   pei_tehai = new Array(14),
-  ton_sutehai = new Array(),
-  nan_sutehai = new Array(),
+  ton_sutehai = new Array(30),
+  nan_sutehai = new Array(30),
   sha_sutehai = new Array(30),
   pei_sutehai = new Array(30);
   var ton_trash_index=0;
@@ -54,11 +54,19 @@ io.on('connection', function(socket){
   }); 
   function prepGame(){
   	used_index=0;
+  	now_turn=0;
+  	for(var i=0;i<30;i++){
+  		ton_sutehai[i]=0;
+  		nan_sutehai[i]=0;
+  		sha_sutehai[i]=0;
+  		pei_sutehai[i]=0;
+  	}
   	io.sockets.emit('notice_bakaze', PLAYER_NUM);
-  	console.log("あなたは"+baName_jp[temp]+"です。参加人数:"+PLAYER_NUM+"人");
+  	console.log("あなたは"+baName_jp[your_kaze]+"です。参加人数:"+PLAYER_NUM+"人");
   }
   //--------------配牌-----------------------
   socket.on('haipai',function(data){
+  	console.log("配牌完了");
   	if(data == 0)PLAYER_NUM=3;
   	else PLAYER_NUM=4;
   	for (var i=0; i<136;i++){
@@ -240,13 +248,15 @@ io.on('connection', function(socket){
   });
   //----------------ロン-------------------------
  socket.on('ron',function(data){
-// 	io.sockets.emit('game_end',1);
-	socket.broadcast.emit('game_end' ,1);
+ 	io.sockets.emit('game_end',1);
+// 	socket.emit('game_end',1);
+//	socket.broadcast.emit('game_end' ,1);
   	console.log("gameend ron");
  });
  
  //---------------次の対局-----------------------
  socket.on('next_game' , function(data){
+ 	io.sockets.emit('resetClient',0);
  });
   
 

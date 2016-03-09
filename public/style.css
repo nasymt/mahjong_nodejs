@@ -23,6 +23,7 @@
 	bottom:0;
 	width:100%;
 	background-color:#F00;
+	font-size:20px;
 }
 
 #startWaiting{
@@ -54,7 +55,7 @@ input#stage_top{
 	background-color:#666;
 	font-size:20px;
 }
-
+/*-------------------チー、ポン、ロン、パス---------------*/
 #chi,#pon,#kan,#ron,#pass,#reach{
 	width:100px;
 	height:50px;
@@ -84,31 +85,76 @@ input#stage_top{
 #reach{
 	left:700px;
 }
-
+#ton_nakihai,#nan_nakihai,#sha_nakihai,#pei_nakihai{
+	width:600px;
+	height:80px;
+	position:absolute;
+	border:1px solid #FF0;
+}
+#ton_nakihai{
+	top:85%;
+	margin-left:50%;
+	left:-300px;
+}
+#nan_nakihai{
+	top:40%;
+	right:-200px; 
+	transform:rotate(-90deg);
+}
+#sha_nakihai{
+	top:0;
+	margin-left:50%;
+	left:-300px;
+}
+#pei_nakihai{
+	top:40%;
+	left:-200px;
+	transform:rotate(90deg);
+}
+/*---------------捨て牌関連---------------------*/
 #ton_sutehai,#nan_sutehai,#sha_sutehai,#pei_sutehai{
-	width:300px;
-	height:200px;
+	width:400px;
+	height:150px;
 	position:absolute;
 }
+
+#ton_sutehai img{
+	width:40px;
+//	height:60px;
+}
+#nan_sutehai img{
+	width:40px;
+}
+#sha_sutehai img{
+	width:40px;
+}
+#pei_sutehai img{
+	width:40px;
+}
+
 #ton_sutehai{
-	top:65%;
+	top:60%;
 	margin-left:50%;
-	left:-150px;
+	left:-200px;
 }
 #nan_sutehai{
-	margin-top:50%;
-	top:-100px;
-	right:10%;
+/*	margin-top:50%;
+	top:-100px;*/
+	top:35%;
+	right:5%;
+	transform:rotate(-90deg);
 }
 #sha_sutehai{
-	top:5%;
+	top:10%;
 	margin-left:50%;
-	left:-150px;
+	left:-200px;
+	transform:rotate(-180deg);
 }
 #pei_sutehai{
-	margin-top:50%;
-	top:-100px;
-	left:10%;
+	position:absolute;
+	top:35%;
+	left:5%;
+	transform:rotate(90deg);
 }
 
 /*-----------------------------*/
@@ -164,17 +210,19 @@ div{
 	margin-left:50%;
 	left:-150px;
 	font-size:25px;
-/*	border:1px solid #FF0;*/
-	margin-top:50%;
-	top:-50px;
+	//border:1px solid #FF0;
+	top:35%;
 	text-align:center;
+}
+#dora img{
+	width:40px;
 }
 
 #your_turn{
 	width:500px;
 	height:200px;
 	font-size:30px;
-	position:absolute;
+		position:absolute;
 	margin-left:50%;
 	left:-250px;
 	text-align:center;
@@ -194,7 +242,7 @@ div{
 	left:-400px;
 	top:100px;
 	height:500px;
-	border:1px solid #00F;
+//	border:1px solid #00F;
 }
 
 #yakuButton{
@@ -205,7 +253,17 @@ div#yakuButton{
 	float:left;
 	width:100px;
 	height:20px;
-	background-color:#F00;
+//	background-color:#F00;
 	font-size:18px;
 	text-align:center;
+}
+
+#next_game{
+	position:absolute;
+	width:100px;
+	height:80px;
+	text-align:center;
+	top:400px;
+	margin-left:50%;
+	left:-50px;
 }
