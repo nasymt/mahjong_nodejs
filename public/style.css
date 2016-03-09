@@ -55,13 +55,15 @@ input#stage_top{
 	font-size:20px;
 }
 
-#chi,#pon,#kan,#ron,#pass{
+#chi,#pon,#kan,#ron,#pass,#reach{
 	width:100px;
 	height:50px;
 	text-align:center;
 	font-size:25px;
 	position:absolute;
 	top:550px;
+	z-index:5;
+/*	background-color:#F00;*/
 }
 
 #chi{
@@ -78,6 +80,9 @@ input#stage_top{
 }
 #pass{
 	left:570px;
+}
+#reach{
+	left:700px;
 }
 
 #ton_sutehai,#nan_sutehai,#sha_sutehai,#pei_sutehai{
@@ -159,8 +164,48 @@ div{
 	margin-left:50%;
 	left:-150px;
 	font-size:25px;
-	border:1px solid #FF0;
+/*	border:1px solid #FF0;*/
 	margin-top:50%;
 	top:-50px;
+	text-align:center;
+}
+
+#your_turn{
+	width:500px;
+	height:200px;
+	font-size:30px;
+	position:absolute;
+	margin-left:50%;
+	left:-250px;
+	text-align:center;
+	top:50px;
+}
+
+#tehai_img1,#tehai_img2,#tehai_img3,#tehai_img4,#tehai_img5,#tehai_img6,#tehai_img7,#tehai_img8,#tehai_img9,#tehai_img10,#tehai_img11,#tehai_img12,#tehai_img13,#tehai_img14{
+	top:66px;
+	height:100px;
+	float:left;
+}
+
+#yakuCulc{
+	position:absolute;
+	width:800px;
+	margin-left:50%;
+	left:-400px;
+	top:100px;
+	height:500px;
+	border:1px solid #00F;
+}
+
+#yakuButton{
+	position:relative;
+//	border:1px solid #0FF;
+}
+div#yakuButton{
+	float:left;
+	width:100px;
+	height:20px;
+	background-color:#F00;
+	font-size:18px;
 	text-align:center;
 }

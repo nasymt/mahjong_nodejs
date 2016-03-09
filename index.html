@@ -13,16 +13,6 @@
   
  <!--//-----TOP画面---------->
  <div id="top">
-<!--<form id="setupForm" name="setupFormName">
-  <select id="bakaze" name="bakazeName">
-  	<option value="ton">東</option>
-  	<option value="nan">南</option>
-  	<option value="sha">西</option>
-  	<option value="pei">北</option>
-  	<option value="stage">ステージ</option>
-  </select>  
-  <input type="submit" value="Send!">  
-  </form>  -->
     <div id="selectKaze">
   	<div id="ton" onClick="setup(0);">東</div>
   	<div id="nan" onClick="setup(1);">南</div>
@@ -30,10 +20,8 @@
   	<div id="pei" onClick="setup(3);">北</div>
   	<div id="stage" onClick="setup(4);">ステージ</div>
   </div>
-
 </div>
 <form id="game_start"></form>
-
 <form id="doHaipai3"></form>
 <form id="doHaipai4"></form>
 <div id="startWaiting">
@@ -44,8 +32,8 @@
 <div id="now_stage"></div>
 <div id="your_turn"></div>
 <div id="tehai">
-<span id="tehai_img1"></span>
-<span id="tehai_img2"></span>
+<div id="tehai_img1"></div>
+<div id="tehai_img2"></div>
 <span id="tehai_img3"></span>
 <span id="tehai_img4"></span>
 <span id="tehai_img5"></span>
@@ -72,6 +60,13 @@
 <div id="kan"></div>
 <div id="ron"></div>
 <div id="pass"></div>
+<div id="reach"></div>
+
+<div id="yakuCulc">
+<div id="yakuButton"></div>
+</div>
+
+<div id="next_game"></div>
 
     <script src="//cdn.socket.io/socket.io-1.2.0.js"></script>
     <script src="//code.jquery.com/jquery-1.11.1.js"></script>
@@ -79,58 +74,20 @@
     <script>
 //----------------------------javascript----------------------  
   var socket = io();
-/*  $('#setupForm').submit(function(e){
-  	e.preventDefault();
-  	socket.json.emit('setup',{
-  		room:$('#bakaze').val()	
-  	});
-  	var val = document.setupFormName.bakazeName.value;
-  	document.getElementById("top").innerHTML="<p></p>";
-	if(val=="ton")val="東";
-	else if(val=="nan")val="南";
-	else if(val=="sha")val="西";
-	else if(val=="pei")val="北";
-  	document.getElementById("yourKaze").innerHTML = "<p>あなたは"+val+"家です。</p>";
-	if(val=="stage"){
-  		document.getElementById("doHaipai3").innerHTML+="<input type=\"submit\" value=\"配牌(3麻)\">";
-  		document.getElementById("doHaipai4").innerHTML+="<input type=\"submit\" value=\"配牌(4麻)\">";
-  		document.getElementById("tehai").innerHTML="";
-  	}
-  });*/
   var your_kaze=0;
   var now_turn=0;
+  var baName_en = ["ton","nan","sha","pei","stage"];
+  var baName_ja = ["東","南","西","北","ステージ"];
+  var bNaki =false;
+  //--------------setup---------------------------
   function setup(data){
   	var data_char;
-  	your_kaze=data;
-  	if(data==0)data_char = "ton";
-  	else if(data==1)data_char = "nan";
-  	else if(data==2)data_char = "sha";
-  	else if(data==3)data_char = "pei";
-  	else if(data==4)data_char = "stage";
-  	
+  	your_kaze=data;  	
   	socket.json.emit('setup',{
-  		room:data_char
+  		room:baName_en[data]
   	});
-  	var temp;
-  	switch(data){
-  		case 0:
-  			temp = "東";
-  			break;
-  		case 1:
-  			temp = "南";
-  			break;
-  		case 2:
-  			temp = "西";
-  			break;
-  		case 3:
-  			temp = "北";
-  			break;
-  		case 4:
-  			temp = "ステージ";
-  			break;
-  	}
   	document.getElementById("selectKaze").innerHTML="<p></p>";
-  	document.getElementById("yourKaze").innerHTML = "<p>あなたは"+temp+"家です。</p>";
+  	document.getElementById("yourKaze").innerHTML = "<p>あなたは"+baName_ja[data]+"家です。</p>";
   	if(data==4){
   		document.getElementById("doHaipai3").innerHTML+="<input type=\"submit\" value=\"配牌(3麻)\">";
   		document.getElementById("doHaipai4").innerHTML+="<input type=\"submit\" value=\"配牌(4麻)\">";
@@ -158,8 +115,6 @@
   socket.on('stage_update',function(data){
   	document.getElementById("nokori").innerHTML = "<p>残 "+data+" 牌</p>";
   });
-  
-  
   function stage_setHTML(){
    	document.getElementById("doHaipai3").innerHTML = "";
    	document.getElementById("doHaipai4").innerHTML = "";
@@ -168,17 +123,13 @@
    	document.getElementById("sha_sutehai").innerHTML = "<p>西</p>";
    	document.getElementById("pei_sutehai").innerHTML = "<p>北</p>";
    	document.getElementById("startWaiting").innerHTML = "";
-   	var temp = ["#ton_sutehai","#nan_sutehai","#sha_sutehai","#pei_sutehai"];
    	for(var i=0;i<4;i++){
-   		$(temp[i]).css({
-   			'border':'4px solid #F00'
+   		$(sute_index2[i]).css({
+   			'border':'3px solid #F00'
    		});
    	}
-   	console.log("ok");
    	document.getElementById("game_start").innerHTML = "<input type=\"submit\" value=\"対局開始\">";
-  }
-  
-//  var oya = 0;
+  }  
   var now_stage = 0;
   $('#game_start').submit(function(e){
   	e.preventDefault();
@@ -202,7 +153,6 @@
   	document.getElementById("now_stage").innerHTML = "<p>"+now_stage_char+"</p>";
   });
   
-
   socket.on('notice_bakaze' , function(msg){
 	document.getElementById("joinNum").innerHTML="<p id=\"joinNum\">現在の参加人数："+msg+"人</p>";
   });
@@ -210,7 +160,6 @@
   var myTehai = new Array(14);
   var myTehai_type = new Array(14);
   socket.on('tehai' , function(msg){
-  	console.log("comon");
   	myTehai[0]=msg.tehai1;
   	myTehai[1]=msg.tehai2;
   	myTehai[2]=msg.tehai3;
@@ -230,19 +179,18 @@
   	36-39:_1 40-43:_2 44-47:_3 48-51:_4 52-55:_5 56
   	---------------------*/
   	document.getElementById("startWaiting").innerHTML = "";
-  	document.getElementById("chi").innerHTML ="<p onClick=\"doChi();\">チー</p>";
-  	document.getElementById("pon").innerHTML = "<p onClick=\"doPon();\">ポン</p>";
-  	document.getElementById("kan").innerHTML = "<p onClick=\"doKan();\">カン</p>";
-  	document.getElementById("ron").innerHTML = "<p onClick=\"doRon();\">ロン</p>";
-  	document.getElementById("pass").innerHTML = "<p onClick=\"doPass();\">パス</p>";
-  	var button_char = ["#chi","#pon","#kan","#ron","#pass"];
-  	for(var i=0;i<5;i++){
-  		$(button_char[i]).css({
-  			'background-color':'#F00',
-  			'opacity':'0.3'
-  		});
-  	}  	
-  	
+  	document.getElementById("chi").innerHTML ="<p onClick=\"emitAction(0);\">チー</p>";
+  	document.getElementById("pon").innerHTML = "<p onClick=\"emitAction(1)\">ポン</p>";
+  	document.getElementById("kan").innerHTML = "<p onClick=\"emitAction(2);\">カン</p>";
+  	document.getElementById("ron").innerHTML = "<p onClick=\"emitAction(3);\">ロン</p>";
+  	document.getElementById("pass").innerHTML = "<p onClick=\"emitAction(4);\">パス</p>";
+  	document.getElementById("reach").innerHTML = "<p onClick=\"emitAction(5);\">リーチ</p>";
+	fadeOutButton();
+	for(var i=0;i<6;i++){
+		$(ponChiArray[i]).css({
+			'background-color':'#F00'
+		});
+	}
   	
 	myTehai = sortPi(myTehai);
   	for(var i=0;i<13;i++){
@@ -267,39 +215,69 @@
   });
   socket.on('now_turn',function(data){
   	now_turn = data;
+	fadeOutButton();
   });
   //-----------チー・ポン・カン・ロン----------
-  function doPass(){
-  	$('#pass').css({
-  		'opacity':'0.3'
+  var ponChiArray = ["#chi","#pon","#kan","#ron","#pass","#reach"];
+  function emitAction(n){
+  	switch(n){
+  		case 0:
+  			socket.emit('chi' , your_kaze);
+  			bNaki=true;
+  			break;
+  		case 1:
+  			socket.emit('pon' , your_kaze);
+  			bNaki=true;
+  			break;
+  		case 2:
+  			socket.emit('kan' , your_kaze);
+  			break;
+  		case 3:
+  			socket.emit('ron' , your_kaze);
+  			break;
+  		case 4:
+  			socket.emit('pass' , your_kaze);
+  			break;
+  		case 5:
+  			socket.emit('reach' , your_kaze);
+  			break;
+  	}
+  		fadeOutButton();
+  }
+  function fadeOutButton(){
+  	for(var i=0;i<6;i++){
+	  	$(ponChiArray[i]).css({
+  			'opacity':'0.3'
+  		});
+  	}
+  }
+  
+  
+  socket.on('chi',function(data){
+  	if(data.pi[0]==null){
+  		console.log("null"+now_turn);
+  		document.getElementById(sute_index[now_turn]).innerHTML = "";
+  	}
+  	for(var i=0;i<data.index;i++){
+  		console.log("koreda!"+data.pi[i]);
+  	}
+  });
+  
+  socket.on('pon',function(data){
+  });
+  
+  socket.on('canAction' , function(data){
+  	$(ponChiArray[data]).css({
+  		'opacity' : '1.0'
   	});
-  	socket.emit('pass',your_kaze);
-  }
-  function doChi(){
-  	$('#chi').css({
-  		'opacity':'0.3'
-  	});
-	socket.emit('chi',{
-		turn : now_turn,
-		player : your_kaze
-	});
-  }
-  function doPon(){
-  }
-  function doKan(){
-  }
-  function doRon(){
-  }
+  });
+    
   //---------------捨て牌処理-------------------
+  var sute_index = ["ton_sutehai","nan_sutehai","sha_sutehai","pei_sutehai"];
+  var sute_index2 = ["#ton_sutehai" , "#nan_sutehai" , "#sha_sutehai" , "#pei_sutehai"];
   socket.on('sutehai' , function(data){
   	var pai = createPiAddr(data.index);
   	console.log("sutehai:"+pai.addr);
-  	if(data.chipon){
-  		var temp = ["ton_sutehai" , "nan_sutehai" , "sha_sutehai" , "pei_sutehai"];
-  		var element = document.getElementById(temp[data._now_turn]);
-  		element.removeChild(element.lastChild);
-  		console.log("REMOVE");
-  	}
   	switch(data.player){
   		case 0:
   			document.getElementById("ton_sutehai").innerHTML += "<img src=\"./img/"+pai.addr+"\">";
@@ -316,28 +294,56 @@
   	}
   });
   
-  socket.on('canPass',function(data){
-  	$('#pass').css({
-  		'opacity':'1.0'
-  	});
-  });
-  socket.on('canChi' , function(data){
-  	$('#chi').css({
-  		'opacity':'1.0'
-  	});
-  });
-  socket.on('canPon' , function(data){
-  	$('#pon').css({
-  		'opacity':'1.0'
-  	});
-  });
+
   
   socket.on('turn_end',function(data){
   	document.getElementById("your_turn").innerHTML = "";
   	console.log("turn_end");
   });
+  var bSelectPair = false;
+  var nSelectPair = 0;
+  socket.on('your_turn',function(data){
+  	document.getElementById("your_turn").innerHTML = "<p>あなたの番です</p>";
+  	if(data==1){
+  		document.getElementById("your_turn").innerHTML += "<p>ペアにする牌を２つ選択してください。</p>";
+  		bSelectPair=true;
+  	}
+  	now_turn = your_kaze;
+  });
+  var yaku_name=["平和","断ヤオ","イーペーコー","チャンタ","一気通貫","三色同順","三色同刻","トイトイ","三暗刻","三槓子","小三元","七対子","二盃口","ジュンチャン","ホンイツ","チンイツ","役満系"];
+  socket.on('game_end',function(data){
+  	if(your_kaze!=4){
+  		for(var i=1;i<=14;i++){
+  			document.getElementById("tehai_img"+i).innerHTML = "";
+ 	 	}
+ 	 	document.getElementById("your_turn").innerHTML = "<p>ゲーム終了</p>";
+  		fadeOutButton();
+  	}
+  	if(your_kaze==4){
+  		for(var i=0;i<4;i++){
+	  		document.getElementById(sute_index[i]).innerHTML = "";
+	  		$(sute_index2[i]).css({
+	  			'border-style':'none'
+	  		});
+	  	}
+	  	document.getElementById("stage_monitor").innerHTML = "";
+	  	for(var i=0;i<yaku_name.length;i++){
+		  	document.getElementById("yakuButton").innerHTML += "<div>"+yaku_name[i]+"</div>";
+		  }
+		document.getElementById("next_game").innerHTML = "<div onClick=\"next_game();\">次の対局へ</div>";
+		$('#next_game').css({
+			'background-color':'#F00'
+		});
+  	}
+  });
   
-
+  //------------次の対局-----------------
+  function next_game(){
+  	now_stage++;
+  	socket.emit('next_game',now_stage);
+  	bNaki=false;
+  	bSelectPair = false;	
+  }
   
 </script>
   </body>

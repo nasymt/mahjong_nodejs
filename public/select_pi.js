@@ -3,7 +3,7 @@ function selectPi(pi,sute){
 	if(pre_select!=pi)pre_select = pi;
 	else {
 		if(bTrash){
-			socket.emit('sutehai',sute);
+			socket.emit('sutehai',myTehai[pi-1]);
 			myTehai.splice(pi-1,1);		
 			myTehai = sortPi(myTehai);
 			for(var i=0;i<13;i++){
@@ -16,6 +16,10 @@ function selectPi(pi,sute){
 			document.getElementById("tehai_img14").innerHTML = "";
 			console.log("牌を捨てました:"+pi);
 			bTrash=false;
+		}else if(bSelectPair){
+			if(nSelectPair==0){
+				
+			}
 		}
 	}
 	var c = '#tehai_img' + pi ;
@@ -26,7 +30,6 @@ function selectPi(pi,sute){
 		});
 	}	
 	$(c).css({
-//  		'background-color':'#FF0',
   		'border':'2px solid #F00'
   	});
 }
