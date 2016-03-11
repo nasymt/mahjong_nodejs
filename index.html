@@ -84,13 +84,26 @@
   var baName_en = ["ton","nan","sha","pei","stage"];
   var baName_ja = ["東","南","西","北","ステージ"];
   var bNaki =false;
+  var bPon = false;
   var now_stage_char = ["東一局" ,"東二局","東三局","東四局","南一局","南二局","南三局","南四局"];
+  var naki_name = ["ton_nakihai" , "nan_nakihai" , "sha_nakihai","pei_nakihai"];
   var PLAYER_NUM = 3;
   var oya=0;
+  var ton_sutehai = new Array(30);
+  var nan_sutehai = new Array(30);
+  var sha_sutehai = new Array(30);
+  var pei_sutehai = new Array(30);
+  var ton_sutehai_index=0;
+  var nan_sutehai_index=0;
+  var sha_sutehai_index=0;
+  var pei_sutehai_index=0;
+  var pon_index1=0;
+  var pon_index2=0;
+
   //--------------setup---------------------------
   function setup(data){
   	var data_char;
-  	your_kaze=data;  	
+  	your_kaze=data;
   	socket.json.emit('setup',{
   		room:baName_en[data]
   	});
@@ -128,6 +141,7 @@
   	document.getElementById("dora").innerHTML +="<p>ドラ<img src=\"./img/"+temp.addr+"\"></p>";
   	document.getElementById("nokori").innerHTML ="<p>残 69 牌</p>";
   	$('body').css({
+  		'background-image' : "none",
   		'background-color':'#327D5D'
   	});
   });
@@ -161,7 +175,7 @@
   socket.on('notice_bakaze' , function(msg){
 	document.getElementById("joinNum").innerHTML="<p id=\"joinNum\">現在の参加人数："+msg+"人</p>";
   });
-  
+ 
   var myTehai = new Array(14);
   var myTehai_type = new Array(14);
   socket.on('tehai' , function(msg){
@@ -198,16 +212,7 @@
 			'background-color':'#F00'
 		});
 	}
-  	
 	myTehai = sortPi(myTehai);
-  	for(var i=0;i<13;i++){
-		var temp = createPiAddr(myTehai[i]);
-		var pai_img = temp.addr;
-		myTehai_type[i] = temp.type;
-  		console.log(i+":"+pai_img+":"+myTehai[i]+":"+myTehai_type[i]);
-  		var tmp = i+1;
-  		document.getElementById("tehai_img"+tmp).innerHTML = "<img src=\"./img/"+pai_img+"\" onClick=\"selectPi("+tmp+","+myTehai[i]+");\">";
-	}
   });
   
   //--------------ツモ--------------------------
@@ -229,12 +234,24 @@
   function emitAction(n){
   	switch(n){
   		case 0:
-  			socket.emit('chi' , your_kaze);
+  			document.getElementById("your_turn").innerHTML += "<p>ペアにする牌を２つ選択してください。</p>";
+	  		bSelectPair=true;
   			bNaki=true;
+  			socket.emit('now_turn',your_kaze);
   			break;
   		case 1:
-  			socket.emit('pon' , your_kaze);
-  			bNaki=true;
+			if(bPon){
+				socket.emit('pon',{
+					kaze:now_turn,
+					naki_player:your_kaze,
+				});
+				console.log("PON!"+pon_index1+":"+pon_index2);
+				myTehai[pon_index1]=0;
+				myTehai[pon_index2]=0;
+				myTehai = sortPi(myTehai);
+  				socket.emit('pon' , your_kaze);
+				bPon=false;
+  			}
   			break;
   		case 2:
   			socket.emit('kan' , your_kaze);
@@ -258,21 +275,58 @@
   		});
   	}
   }
+  socket.on('sutehai_data',function(data){
+  	var now_sutehai = createPiAddr(data);
+  	var pon_count=0;
+  	pon_index1=0;
+  	pon_index2=0;
+
+  	
+  	console.log("tehai_length:"+tehai_length);
+  	//--------------ポンできるかチェック---------------
+  	for(var i=0;i<tehai_length;i++){
+  		var temp = createPiAddr(myTehai[i]);
+  		if(now_sutehai.id==temp.id){
+  			pon_count++;
+  			if(pon_index1==0)pon_index1=i;
+  			else if(pon_index2==0)pon_index2=i;
+  		}
+  		console.log("poncheck:"+now_sutehai.id+":"+temp.id);
+  	}
+  	if(pon_count>1){//ポン可能にする
+  	  	console.log("youcanpon");
+  		bPon=true;
+  		$('#pon').css({
+  			'opacity':'1.0'
+  		});
+  	}
+  });
   
-  
-  socket.on('chi',function(data){
-  	if(data.pi[0]==null){
-  		console.log("null"+now_turn);
+  //---------------チー-----------------------
+  socket.on('chi',function(data){//ステージ上
+  	socket.emit('clearClientNotice',now_turn);
+  	console.log("now_turn"+now_turn);
+  	now_turn=data.player;
+  	console.log("chi_player:"+now_turn);
+	console.log(data.get_pi+":"+data.selected_pi1+":"+data.selected_pi2);
+  	if(data.pi[0]==0){
+  		console.log("chi!!!:"+data.pi[0]+":"+now_turn);
   		document.getElementById(sute_index[now_turn]).innerHTML = "";
   	}
-  	for(var i=0;i<data.index;i++){
-  		console.log("koreda!"+data.pi[i]);
+  	var index=0;
+  	var temp = new Array(3);
+  	temp[0] = createPiAddr(data.get_pi);
+  	temp[1] = createPiAddr(data.selected_pi1);
+  	temp[2] = createPiAddr(data.selected_pi2);
+  	while(data.pi[index]!=0){
+  		var temp2 = createPiAddr(data.pi[index]);
+  		document.getElementById(sute_index[now_turn]).innerHTML +="<img src=\"./img/"+temp2.addr+"\">";
+  	}
+  	for(var i=0;i<3;i++){
+  		document.getElementById(naki_name[data.player]).innerHTML +="<img src=\"./img/"+temp[i].addr+"\">";
   	}
   });
-  
-  socket.on('pon',function(data){
-  });
-  
+    
   socket.on('canAction' , function(data){
   	$(ponChiArray[data]).css({
   		'opacity' : '1.0'
@@ -285,23 +339,8 @@
   socket.on('sutehai' , function(data){
   	var pai = createPiAddr(data.index);
   	console.log("sutehai:"+pai.addr);
-  	switch(data.player){
-  		case 0:
-  			document.getElementById("ton_sutehai").innerHTML += "<img src=\"./img/"+pai.addr+"\">";
-  			break;
-  		case 1:
-  			document.getElementById("nan_sutehai").innerHTML += "<img src=\"./img/"+pai.addr+"\">";
-  			break;
-  		case 2:
-  			document.getElementById("sha_sutehai").innerHTML += "<img src=\"./img/"+pai.addr+"\">";
-  			break;
-  		case 3:
-  			document.getElementById("pei_sutehai").innerHTML += "<img src=\"./img/"+pai.addr+"\">";
-  			break;
-  	}
+  	document.getElementById(sute_index[data.player]).innerHTML += "<img src=\"./img/"+pai.addr+"\">";
   });
-  
-
   
   socket.on('turn_end',function(data){
   	document.getElementById("your_turn").innerHTML = "";
@@ -312,11 +351,16 @@
   socket.on('your_turn',function(data){
   	document.getElementById("your_turn").innerHTML = "<p>あなたの番です</p>";
   	if(data==1){
-  		document.getElementById("your_turn").innerHTML += "<p>ペアにする牌を２つ選択してください。</p>";
-  		bSelectPair=true;
+//  		document.getElementById("your_turn").innerHTML += "<p>ペアにする牌を２つ選択してください。</p>";
+  //		bSelectPair=true;
   	}
   	now_turn = your_kaze;
   });
+  socket.on('clearClientNotice',function(data){
+  	console.log("receive clearClientNotice");
+  	document.getElementById("your_turn").innerHTML = "";
+  });
+  //------------------------ゲーム終了処理------------------------
   var yaku_name=["平和","断ヤオ","イーペーコー","チャンタ","一気通貫","三色同順","三色同刻","トイトイ","三暗刻","三槓子","小三元","七対子","二盃口","ジュンチャン","ホンイツ","チンイツ","役満系"];
   socket.on('game_end',function(data){
   	if(your_kaze<4){
@@ -331,7 +375,11 @@
  	 	document.getElementById("your_turn").innerHTML = "<p>ゲーム終了</p>";
   		fadeOutButton();
   	}
-  	if(your_kaze==4){
+  	if(your_kaze==4){//ステージ用
+  		ton_sutehai_index=0;
+  		nan_sutehai_index=0;
+  		sha_sutehai_index=0;
+  		pei_sutehai_index=0;
   		for(var i=0;i<4;i++){
 	  		document.getElementById(sute_index[i]).innerHTML = "";
 	  		$(sute_index2[i]).css({
@@ -359,19 +407,16 @@
   	bNaki=false;
   	bSelectPair = false;
   	socket.emit('haipai',PLAYER_NUM-3);
-/*  	oya--;
-  	if(oya<0)oya=PLAYER_NUM-1;*/
   	var n = Math.floor(Math.random()*PLAYER_NUM);
   	socket.emit('start',n);
   	
   }
   
-  socket.on('resetClient',function(data){
+  socket.on('resetClient',function(data){//プレイヤー側
   	if(your_kaze!=4){
   		document.getElementById("your_turn").innerHTML = "";
   		for(var i=1;i<=14;i++){
   			document.getElementById("tehai_img"+i).innerHTML = "";
-  			//$('#tehai').empty();
   		}
   	}
   });

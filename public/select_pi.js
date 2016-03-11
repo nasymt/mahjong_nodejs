@@ -1,4 +1,6 @@
 var pre_select =0;
+var pair_pi = new Array(2);
+var tehai_length=0;
 function selectPi(pi,sute){
 	if(pre_select!=pi)pre_select = pi;
 	else {
@@ -6,19 +8,30 @@ function selectPi(pi,sute){
 			socket.emit('sutehai',myTehai[pi-1]);
 			myTehai.splice(pi-1,1);		
 			myTehai = sortPi(myTehai);
-			for(var i=0;i<13;i++){
-				var temp = createPiAddr(myTehai[i]);
-				var pai_img = temp.addr;
-				myTehai_type[i] = temp.type;
-				var tmp = i+1;
-  				document.getElementById("tehai_img"+tmp).innerHTML = "<img src=\"./img/"+pai_img+"\" onClick=\"selectPi("+tmp+");\">";
-			}
 			document.getElementById("tehai_img14").innerHTML = "";
 			console.log("牌を捨てました:"+pi);
 			bTrash=false;
 		}else if(bSelectPair){
 			if(nSelectPair==0){
-				
+				pair_pi[0]=myTehai[pi-1];
+				nSelectPair++;
+				console.log("1st selected"+pair_pi[0]);
+				myTehai[pi-1]=0;
+			}
+			else if(nSelectPair == 1&& (pi != pair_pi[0])){
+				pair_pi[1] = myTehai[pi-1];
+				socket.emit('chi',{
+					kaze:now_turn,
+					pi1:pair_pi[0],//サーバー経由で選んだ牌をステージに送る
+					pi2:pair_pi[1],
+					naki_player:your_kaze
+				});
+				nSelectPair=0;
+				bSelectPair=false;
+				console.log("2nd selected"+pair_pi[1]);
+				myTehai[pi-1]=0;
+				myTehai = sortPi(myTehai);
+				bTrash=true;
 			}
 		}
 	}
@@ -28,17 +41,19 @@ function selectPi(pi,sute){
 		$(temp).css({
 			'border-style':'none'
 		});
-	}	
+	}
 	$(c).css({
-  		'border':'2px solid #F00'
+  		'border':'3px solid #FF0'
   	});
 }
 
   function createPiAddr(num){
  	var pai_img = {
  		addr: "man1-66-90-l.png",
- 		type: "1"
+ 		type: "1",
+ 		id:"1"
  	}
+ 	pai_img.id = Math.floor(num/4)+1;
  	if(num>=0&&num<36){//マンズ
  		pai_img.type = Math.floor((num/4))+1;
   		pai_img.addr = "man" + pai_img.type + "-66-90-l.png";
@@ -55,7 +70,7 @@ function selectPi(pi,sute){
   	return pai_img;
   }
   
-  function sortPi(n){
+  function sortPi(n){	
   	for(var i=0;i<12;i++){
   		for(var j=12 ; j>i ; j--){
   			var temp;
@@ -65,6 +80,28 @@ function selectPi(pi,sute){
   				n[j-1] = temp;
   			}
   		}
+  	}
+  	var index = 0;
+  	var count=0;
+  	var zero_count=0;
+  	for(var i=0;i<13;i++){
+  		if(n[i]==0||n[i]==null)count++;
+  		if(n[i]==0)zero_count++;
+  		$('#tehai_img'+(i+1)).empty();
+  	}
+  	tehai_length=13-count;
+  	if(zero_count!=0)n.splice(0,zero_count);
+  	console.log("手牌は"+(13-count)+"枚です。");
+  	for(var i=0;i<13-count;i++){
+  		//------
+  		var temp = createPiAddr(n[i]);
+		var pai_img = temp.addr;
+		myTehai_type[i] = temp.type;
+		var tmp = i+1;
+  		document.getElementById("tehai_img"+tmp).innerHTML = "<img src=\"./img/"+pai_img+"\" onClick=\"selectPi("+tmp+");\">";
+  		//------
+  		//socket.emit('clearClientNotice',now_turn);
+  		//console.log(i+":"+n[i]+":"+temp.id);
   	}
   	return n;
   }
