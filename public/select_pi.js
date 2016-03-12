@@ -20,6 +20,7 @@ function selectPi(pi,sute){
 			}
 			else if(nSelectPair == 1&& (pi != pair_pi[0])){
 				pair_pi[1] = myTehai[pi-1];
+				//console.log("chi now_turn:"+now_turn+":"+your_kaze);
 				socket.emit('chi',{
 					kaze:now_turn,
 					pi1:pair_pi[0],//サーバー経由で選んだ牌をステージに送る
@@ -31,7 +32,7 @@ function selectPi(pi,sute){
 				console.log("2nd selected"+pair_pi[1]);
 				myTehai[pi-1]=0;
 				myTehai = sortPi(myTehai);
-				bTrash=true;
+				bTrash = true;
 			}
 		}
 	}
@@ -49,7 +50,7 @@ function selectPi(pi,sute){
 
   function createPiAddr(num){
  	var pai_img = {
- 		addr: "man1-66-90-l.png",
+ 		addr: "aka1-66-90-l.png",
  		type: "1",
  		id:"1"
  	}
@@ -93,15 +94,11 @@ function selectPi(pi,sute){
   	if(zero_count!=0)n.splice(0,zero_count);
   	console.log("手牌は"+(13-count)+"枚です。");
   	for(var i=0;i<13-count;i++){
-  		//------
   		var temp = createPiAddr(n[i]);
 		var pai_img = temp.addr;
 		myTehai_type[i] = temp.type;
 		var tmp = i+1;
   		document.getElementById("tehai_img"+tmp).innerHTML = "<img src=\"./img/"+pai_img+"\" onClick=\"selectPi("+tmp+");\">";
-  		//------
-  		//socket.emit('clearClientNotice',now_turn);
-  		//console.log(i+":"+n[i]+":"+temp.id);
   	}
   	return n;
   }

@@ -17,15 +17,15 @@ var bPass = false;
 var ton_tehai = new Array(14),
   nan_tehai = new Array(14),
   sha_tehai = new Array(14),
-  pei_tehai = new Array(14),
-  ton_sutehai = new Array(30),
+  pei_tehai = new Array(14);
+ /* ton_sutehai = new Array(30),
   nan_sutehai = new Array(30),
   sha_sutehai = new Array(30),
   pei_sutehai = new Array(30);
   var ton_trash_index=0;
   var nan_trash_index=0;
   var sha_trash_index=0;
-  var pei_trash_index=0;
+  var pei_trash_index=0;*/
   
   var used_index = 0;
   var all_pai = [];
@@ -57,15 +57,12 @@ io.on('connection', function(socket){
   	used_index=0;
   	now_turn=0;
   	pass_count=0;
-  	/*for(var i=0;i<30;i++){
-  		ton_sutehai[i]=0;
-  		nan_sutehai[i]=0;
-  		sha_sutehai[i]=0;
-  		pei_sutehai[i]=0;
-  	}*/
   	for(var i=0;i<sutehai.length;i++){
   		sutehai[i] = new Array(30);
   		sutehai_index[i]=0;
+  		for(var j=0;j<30;j++){
+  			sutehai[i][j] = 0;
+  		}
   	}
   	
   	io.sockets.emit('notice_bakaze', PLAYER_NUM);
@@ -104,47 +101,13 @@ io.on('connection', function(socket){
   		tehai8 : ton_tehai[7],tehai9 : ton_tehai[8],tehai10 : ton_tehai[9],tehai11 : ton_tehai[10],tehai12 : ton_tehai[11],tehai13 : ton_tehai[12],
   	});
   	socket.to("nan").emit("tehai",{
-  		tehai1 : nan_tehai[0],
-  		tehai2 : nan_tehai[1],
-  		tehai3 : nan_tehai[2],
-  		tehai4 : nan_tehai[3],
-  		tehai5 : nan_tehai[4],
-  		tehai6 : nan_tehai[5],
-  		tehai7 : nan_tehai[6],
-  		tehai8 : nan_tehai[7],
-  		tehai9 : nan_tehai[8],
-  		tehai10 : nan_tehai[9],
-  		tehai11 : nan_tehai[10],
-  		tehai12 : nan_tehai[11],
-  		tehai13 : nan_tehai[12],
+  		tehai1 : nan_tehai[0],tehai2 : nan_tehai[1],tehai3 : nan_tehai[2],tehai4 : nan_tehai[3],tehai5 : nan_tehai[4],tehai6 : nan_tehai[5],tehai7 : nan_tehai[6],tehai8 : nan_tehai[7],tehai9 : nan_tehai[8],tehai10 : nan_tehai[9],tehai11 : nan_tehai[10],tehai12 : nan_tehai[11],tehai13 : nan_tehai[12],
   	});
   	socket.to("sha").emit("tehai",{
-  		tehai1 : sha_tehai[0],
-  		tehai2 : sha_tehai[1],
-  		tehai3 : sha_tehai[2],
-  		tehai4 : sha_tehai[3],
-  		tehai5 : sha_tehai[4],
-  		tehai6 : sha_tehai[5],
-  		tehai7 : sha_tehai[6],
-  		tehai8 : sha_tehai[7],
-  		tehai9 : sha_tehai[8],
-  		tehai10 : sha_tehai[9],
-  		tehai11 : sha_tehai[10],
-  		tehai12 : sha_tehai[11],
-  		tehai13 : sha_tehai[12],
+  		tehai1 : sha_tehai[0],tehai2 : sha_tehai[1],tehai3 : sha_tehai[2],tehai4 : sha_tehai[3],tehai5 : sha_tehai[4],tehai6 : sha_tehai[5],tehai7 : sha_tehai[6],tehai8 : sha_tehai[7],tehai9 : sha_tehai[8],tehai10 : sha_tehai[9],tehai11 : sha_tehai[10],tehai12 : sha_tehai[11],tehai13 : sha_tehai[12],
   	});
   	socket.to("pei").emit("tehai",{
-  		tehai1 : pei_tehai[0],
-  		tehai2 : pei_tehai[1],
-  		tehai3 : pei_tehai[2],
-  		tehai4 : pei_tehai[3],
-  		tehai5 : pei_tehai[4],
-  		tehai6 : pei_tehai[5],
-  		tehai7 : pei_tehai[6],
-  		tehai8 : pei_tehai[7],
-  		tehai9 : pei_tehai[8],
-  		tehai10 : pei_tehai[9],
-  		tehai11 : pei_tehai[10],
+  		tehai1 : pei_tehai[0],tehai2 : pei_tehai[1],tehai3 : pei_tehai[2],tehai4 : pei_tehai[3],tehai5 : pei_tehai[4],tehai6 : pei_tehai[5],tehai7 : pei_tehai[6],tehai8 : pei_tehai[7],tehai9 : pei_tehai[8],tehai10 : pei_tehai[9],tehai11 : pei_tehai[10],
   		tehai12 : pei_tehai[11],
   		tehai13 : pei_tehai[12],
   	});
@@ -154,20 +117,19 @@ io.on('connection', function(socket){
   	tsumo(data,5);
   });
   function tsumo(data,last_pass){
-  	console.log("now"+now_turn);
+  	console.log("now"+now_turn+"ツモ牌"+all_pai[used_index]);
   	var turn_end_index = data-1;
   	if(turn_end_index <0) turn_end_index=PLAYER_NUM-1;
   	used_index++;
   	socket.to(baName[turn_end_index]).json.emit('turn_end',0);
-  	for(var i=0;i<PLAYER_NUM;i++){
-  		socket.to(i).emit('now_turn',data);
-  	}
+  	io.sockets.emit('now_turn',data);
+
   	if(data==last_pass)socket.emit('tsumo' , all_pai[used_index]);
   	else socket.to(baName[data]).json.emit('tsumo' , all_pai[used_index]);
   	pai_left--;
   	socket.to("stage").emit('stage_update',pai_left);
-  	socket.emit('canAction', 3);
-  	socket.emit('canAction', 5);
+  	socket.to(baName[now_turn]).emit('canAction' , 3);
+  	socket.to(baName[now_turn]).emit('canAction' , 5);
   } 
  //--------------捨て牌処理---------------------
   socket.on('sutehai',function(data){
@@ -184,28 +146,13 @@ io.on('connection', function(socket){
   	socket.broadcast.emit('sutehai_data',data);
   });
     function sutehaiFunc(_now_turn,_pi){
-  	console.log("now:"+_now_turn);
-  	/*switch(_now_turn){
-  		case 0:
-  			ton_sutehai[ton_trash_index] = _pi;
-  			ton_trash_index++;
-  			break;
-  		case 1:
-  			nan_sutehai[nan_trash_index] = _pi;
-  			nan_trash_index++;
-  			break;
-  		case 2:
-  			sha_sutehai[sha_trash_index] = _pi;
-  			sha_trash_index++;
-  			break;
-  		case 3:
-  			pei_sutehai[pei_trash_index] = _pi;
-  			pei_trash_index++;
-  			break;
-  	}*/
-  	
+  	console.log("now:"+_now_turn);  	
   	sutehai[_now_turn][sutehai_index[_now_turn]] = _pi;
   	sutehai_index[_now_turn]++;
+  	
+  	for(var i=0;i<sutehai_index[_now_turn];i++){
+  		console.log("捨て牌リスト:"+i+":"+_now_turn+":"+sutehai[_now_turn][i]);
+  	}
   	
   	socket.to("stage").emit('sutehai',{
   		index: _pi,
@@ -214,7 +161,7 @@ io.on('connection', function(socket){
   }
   //-----------パス時の処理--------------------
   socket.on('pass',function(data){
-  	console.log("now_turn:"+now_turn);
+  	//console.log("now_turn:"+now_turn);
   	if(bPass){
   		if(pass_count<PLAYER_NUM-2){
   			pass_count++;
@@ -223,79 +170,78 @@ io.on('connection', function(socket){
   			else now_turn=0;
   			bPass=false;
   			pass_count=0;
-  			console.log("NEXT TSUMO:"+now_turn+" last Pass:"+data);	
+  			console.log("NEXT TSUMO:"+now_turn+" last Pass:"+data);
+  			io.sockets.emit('banAction',5);
   			tsumo(now_turn,data);
   		}
   	}
   });
   //-------------チー------------------------
   socket.on('chi' , function(data){
-  	console.log("data.kaze(chi) :"+data.kaze);
   	socket.emit('get_sutehai', temp_sutehai );
   	pass_count=0;//--------------これ他にも適用させること。
-	switch(data.kaze){
-		case 0:
-			//console.log("ton_sutehai:"+ton_sutehai[0]+":"+ton_sutehai[1]);
-			var temp = ton_sutehai[ton_trash_index-1];
-			ton_sutehai.splice(ton_trash_index-1,1);
-			socket.to("stage").emit('chi',{
-				pi:ton_sutehai,
-				get_pi:temp,
-				selected_pi1:data.pi1,
-				selected_pi2:data.pi2,
-				index:ton_trash_index,
-				player:data.naki_player
-			});
-			//console.log("ton_sutehai:"+ton_sutehai[0]+":"+ton_sutehai[1]);
-			break;
-		case 1:
-			console.log("nan:"+nan_sutehai[0]+":"+nan_sutehai[1]);
-			var temp = nan_sutehai[nan_trash_index-1];
-			nan_sutehai.splice(nan_trash_index-1,1);
-			socket.to("stage").emit('chi',{
-				pi:nan_sutehai,
-				get_pi:temp,
-				selected_pi1:data.pi1,
-				selected_pi2:data.pi2,
-				index:nan_trash_index,
-				player:data.naki_player				
-			});
-			break;
-		case 2:
-			sha_sutehai.pop;
-			socket.to("stage").emit('chi',sha_sutehai);
-			break;
-		case 3:
-			pei_sutehai.pop;
-			socket.to("stage").emit('chi',pei_sutehai);
-			break;
-	}
 	
+	
+	
+ 	var temp = sutehai[data.kaze][sutehai_index[data.kaze]-1];
+ 	sutehai[data.kaze].splice(sutehai_index[data.kaze]-1,1);
+	/*sutehai_index[data.kaze]--;
 	var temp = sutehai[data.kaze][sutehai_index[data.kaze]-1];
-	sutehai[data.kaze].splice(sutehai_index[data.kaze]-1,1);	
-	socket.to("stage").emit('chi',{
+	sutehai[data.kaze].splice(sutehai_index[data.kaze]-1,1);*/
+
+	naki(sutehai[data.kaze] , temp , data.pi1 , data.pi2 , sutehai_index[data.kaze] , data.naki_player);
+	
+	/*socket.to("stage").emit('chi',{
 		pi:sutehai[data.kaze],
 		get_pi:temp,
 		selected_pi1:data.pi1,
 		selected_pi2:data.pi2,
 		index:sutehai_index[data.kaze],
 		player:data.naki_player
-	});
+	});*/
 	
-	
-	socket.to(baName[now_turn]).emit('turn_end',1);
-	now_turn = data.naki_player;
-	socket.emit('your_turn',1);
+	//socket.to(baName[now_turn]).emit('turn_end',1);
+// 	now_turn = data.naki_player;
+// 	socket.emit('your_turn',1);
 	
   });
   //-----------------ポン-------------------------
   socket.on('pon',function(data){
+  	console.log("now_kaze : "+data.kaze);
+  	if(data.naki_player==0)ton_tehai = data.tehai;
+  	else if(data.naki_player==1)nan_tehai = data.tehai;
+  	else if(data.naki_player==2)sha_tehai = data.tehai;
+  	else if(data.naki_player==3)pei_tehai = data.tehai;
   	
+  	var temp = sutehai[data.kaze][sutehai_index[data.kaze]-1];
+	sutehai[data.kaze].splice(sutehai_index[data.kaze]-1,1);
+	sutehai_index[data.kaze]--;
+	/*sutehai_index[data.kaze]--;
+	var temp = sutehai[data.kaze][sutehai_index[data.kaze]-1];
+	sutehai[data.kaze].splice(sutehai_index[data.kaze]-1,1);	*/
+	
+	for(var i=0;i<sutehai_index[data.kaze];i++){
+		console.log("sutehai list:"+i+":"+sutehai[data.kaze][i]);
+	}
+	console.log("pon:"+temp+":"+data.pi1+":"+data.pi2);
+  	
+  	naki(sutehai[data.kaze] , temp , data.pi1 , data.pi2 , sutehai_index[data.kaze] , data.naki_player);
   });
-  function ponFunc(){
-  	
-  }
   
+  function naki( _pi , _getPi , _selected_pi1 , _selected_pi2 , _index , _player ){
+  	socket.to("stage").emit('naki',{
+		pi : _pi,//鳴かれた人の捨て牌リスト
+		get_pi : _getPi,//鳴いた牌
+		selected_pi1 : _selected_pi1,
+		selected_pi2 : _selected_pi2,
+		index : _index,//鳴かれた人の捨て牌リストのindex
+		player : _player//鳴いた人
+	});
+	socket.to(baName[now_turn]).emit('banAction',5);
+	socket.to(baName[now_turn]).emit('turn_end',1);
+	now_turn = _player;
+	socket.emit('your_turn',1);
+  }
   
   socket.on('clearClientNotice',function(data){
 	socket.to(baName[data]).emit('clearClientNotice',0);
@@ -311,14 +257,16 @@ io.on('connection', function(socket){
  	io.sockets.emit('resetClient',0);
  });
   socket.on('now_turn',function(data){
-  	console.log("now2"+now_turn);
+//  	console.log("now2"+now_turn);
   	now_turn = data;
-  	console.log("now3"+now_turn);
+//  	console.log("now3"+now_turn);
   });
 
 });
 
-
+function sortPi(n){
+	
+}
 
 //http.listen(process.env.PORT||3000 , function(){
 http.listen(3000 , function(){
