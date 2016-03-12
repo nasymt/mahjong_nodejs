@@ -1,6 +1,7 @@
 <!doctype html>
-<html>
+<html lang="ja">
   <head>
+    <meta charset="UTF-8">
     <title>麻雀テスト</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
     <link rel="stylesheet" href="style.css">
@@ -46,7 +47,9 @@
 <span id="tehai_img13"></span>
 <span id="tehai_img14"></span>
 </div>
-<div id="ton_sutehai"></div>
+<div id="ton_sutehai">
+<div id="ton_tenbou"> </div>
+</div>
 <div id="nan_sutehai"></div>
 <div id="sha_sutehai"></div>
 <div id="pei_sutehai"></div>
@@ -66,16 +69,39 @@
 <div id="ron"></div>
 <div id="pass"></div>
 <div id="reach"></div>
+<audio id="aChi" src="./sound/chi.wav"></audio>
+<audio id="aPon" src="./sound/pon.wav"></audio>
+<audio id="aKan" src="./sound/kan.wav"></audio>
+<audio id="aRon" src="./sound/ron.wav"></audio>
+<audio id="aReach" src="./sound/reach.wav"></audio>
+<audio id="aTsumo" src="./sound/tsumo.wav"></audio>
+<audio id="aMaze" src="./sound/maze.wav"></audio>
+<audio id="aSute" src="./sound/sute.wav"></audio>
 
 <div id="yakuCulc">
 <div id="yakuButton"></div>
 </div>
+
+<div id="1yaku"></div>
+<div id="2yaku"></div>
+<div id="3yaku"></div>
+<div id="4yaku"></div>
+<div id="5yaku"></div>
+<div id="6yaku"></div>
+<div id="7yaku"></div>
+<div id="8yaku"></div>
+<div id="9yaku"></div>
+<div id="10yaku"></div>
+<div id="11yaku"></div>
+<div id="12yaku"></div>
+<div id="13yaku"></div>
 
 <div id="next_game"></div>
 
     <script src="//cdn.socket.io/socket.io-1.2.0.js"></script>
     <script src="//code.jquery.com/jquery-1.11.1.js"></script>
     <script type="text/javascript" src="./select_pi.js"></script>
+    <script type="text/javascript" src="./yaku.js"></script>
     <script>
 //----------------------------javascript----------------------  
   var socket = io();
@@ -83,7 +109,8 @@
   var now_turn=0;
   var myTehai = new Array(14);
   var myTehai_type = new Array(14);
-  //------------id name--------------
+  var points = [25000,25000,25000,25000];
+//------------id name--------------
   var baName_en = ["ton","nan","sha","pei","stage"];
   var baName_ja = ["東","南","西","北","ステージ"];
   var now_stage_char = ["東一局" ,"東二局","東三局","東四局","南一局","南二局","南三局","南四局"];
@@ -92,10 +119,23 @@
   var bNaki =false;
   var bPon = false;
   var PLAYER_NUM = 3;
-  var oya=0;
+//   var oya=0;
   var pon_index1=0;
   var pon_index2=0;
   var bTrash = false;
+  var bReach = false;
+  var reach_flag=0;
+  var winner = 0;
+  var winner_point = 0;
+  var winner_point2 = 0;
+  var bCanAction = new Array(6);
+//   var pre_bReach = false;
+/*  var audioReach = new Audio("./sound/reach.wav");
+  var audioRon = new Audio("./sound/ron.wav");
+  var audioChi = new Audio("./sound/chi.wav");
+  var audioPon = new Audio("./sound/pon.wav");
+  var audioKan = new Audio("./sound/kan.wav");
+  var audioTsumo = new Audio("./sound/tsumo.wav");*/
 
   //--------------setup---------------------------
   function setup(data){
@@ -105,10 +145,16 @@
   		room:baName_en[data]
   	});
   	document.getElementById("selectKaze").innerHTML="<p></p>";
-  	if(data!=4){
-  		document.getElementById("yourKaze").innerHTML = "<p>あなたは"+baName_ja[data]+"家です。</p>";
+  	if(data!=4){//クライアント側
+  		document.getElementById("yourKaze").innerHTML = "<p>あなたは"+baName_ja[data]+"家です。</p>";  		
+		$('#startWaiting').css({
+			'background' : 'none'
+		});
+		for(var i=0;i<bCanAction.length;i++){
+			bCanAction[i] = false;
+		}
   	}
-  	if(data==4){
+  	if(data==4){//ステージ上
   		document.getElementById("doHaipai3").innerHTML+="<input type=\"submit\" value=\"配牌(3麻)\">";
   		document.getElementById("doHaipai4").innerHTML+="<input type=\"submit\" value=\"配牌(4麻)\">";
   		document.getElementById("tehai").innerHTML="";
@@ -117,7 +163,14 @@
   			'width' : '0'
   		});
  		document.getElementById('yourKaze').innerHTML = "";
+ 		for(var i=0;i<4;i++){
+  			var temp = "#"+naki_name[i];
+  			$(temp).css({
+  				'border' : '1px solid #FF0'
+  			});
+  		}
   	}
+  	oya=0;
   }
   $('#doHaipai3').submit(function(e){
   	e.preventDefault();
@@ -148,10 +201,10 @@
   function stage_setHTML(){
    	document.getElementById("doHaipai3").innerHTML = "";
    	document.getElementById("doHaipai4").innerHTML = "";
-   	document.getElementById("ton_sutehai").innerHTML = "<p>東</p>";
-   	document.getElementById("nan_sutehai").innerHTML = "<p>南</p>";
-   	document.getElementById("sha_sutehai").innerHTML = "<p>西</p>";
-   	document.getElementById("pei_sutehai").innerHTML = "<p>北</p>";
+   	document.getElementById("ton_sutehai").innerHTML = "<p>東  "+points[0]+"</p>";
+   	document.getElementById("nan_sutehai").innerHTML = "<p>南  "+points[1]+"</p>";
+   	document.getElementById("sha_sutehai").innerHTML = "<p>西  "+points[2]+"</p>";
+   	document.getElementById("pei_sutehai").innerHTML = "<p>北  "+points[3]+"</p>";
    	document.getElementById("startWaiting").innerHTML = "";
    	for(var i=0;i<4;i++){
    		$(sute_index2[i]).css({
@@ -173,8 +226,6 @@
 	document.getElementById("joinNum").innerHTML="<p id=\"joinNum\">現在の参加人数："+msg+"人</p>";
   });
  //-----------------------セットアップ終了---------------------------
-
- 
 
   socket.on('tehai' , function(msg){
   	console.log("私は"+your_kaze+"家です。");
@@ -211,16 +262,20 @@
 		});
 	}
 	myTehai = sortPi(myTehai);
+	document.getElementById("aMaze").play();
   });
   
   //--------------ツモ--------------------------
   socket.on('tsumo' , function(data){
   	console.log("あなたのツモ牌です。"+data);
   	document.getElementById("your_turn").innerHTML += "<p>あなたの番です</p>";
+  	if(reach_flag>0)document.getElementById("your_turn").innerHTML +="<p>リーチ！</p>";
   	var now_pi = createPiAddr(data);
   	myTehai[13] = data;
-  	document.getElementById("tehai_img14").innerHTML += "<img src=\"./img/"+now_pi.addr+"\" onClick=\"selectPi(14,"+data+")\">";
+  	document.getElementById("tehai_img14").innerHTML += "<img  style=\"margin-left:30px;\" src=\"./img/"+now_pi.addr+"\" onClick=\"selectPi(14);\">";
   	bTrash = true;
+  	if(reach_flag==1)reach_flag=2;
+
   });
 
   //-----------チー・ポン・カン・ロン----------
@@ -228,13 +283,16 @@
   function emitAction(n){
   	switch(n){
   		case 0:
-  			document.getElementById("your_turn").innerHTML += "<p>ペアにする牌を２つ選択してください。</p>";
-	  		bSelectPair=true;
-  			bNaki=true;
-  			socket.emit('now_turn',your_kaze);
+  			if(bCanAction[0]){
+  				document.getElementById("your_turn").innerHTML += "<p>ペアにする牌を２つ選択してください。</p>";
+	  			bSelectPair=true;
+  				bNaki=true;
+  				socket.emit('now_turn',your_kaze);
+  				fadeOutButton();
+  			}
   			break;
   		case 1:
-			if(bPon){
+			if(bCanAction[1]){
 				console.log("PON!"+pon_index1+":"+pon_index2);
 				var temp1 = myTehai[pon_index1];
 				var temp2 = myTehai[pon_index2];
@@ -248,7 +306,8 @@
 					pi2 : temp2,
 					tehai : myTehai
 				});
-				bPon=false;
+				fadeOutButton();
+				audioPon.play();
 				bTrash=true;
   			}
   			break;
@@ -257,15 +316,26 @@
   			break;
   		case 3:
   			socket.emit('ron' , your_kaze);
+  			winner = your_kaze;
+  			console.log("ロン！"+your_kaze);
+  			if(now_turn==your_kaze)document.getElementById("aTsumo").play();
+  			else document.getElementById("aRon").play();
   			break;
   		case 4:
-  			socket.emit('pass' , your_kaze);
+  			if(bCanAction[4]){
+	  			socket.emit('pass' , your_kaze);
+	  			fadeOutButton();
+  			}
   			break;
   		case 5:
-  			socket.emit('reach' , your_kaze);
+  			if(bCanAction[5]){
+  				reach_flag = 1;
+  				document.getElementById("your_turn").innerHTML += "<p>リーチ！	</p>";
+  				banAction(5);
+  			}
   			break;
   	}
-  		fadeOutButton();
+  	//fadeOutButton();
   }
   function fadeOutButton(){
   	for(var i=0;i<6;i++){
@@ -293,7 +363,8 @@
   	}
   	if(pon_count>1){//ポン可能にする
   	  	console.log("youcanpon");
-  		bPon=true;
+  		//bPon=true;
+  		bCanAction[1] = true;
   		$('#pon').css({
   			'opacity':'1.0'
   		});
@@ -303,23 +374,15 @@
   //---------------チー-----------------------
   socket.on('naki',function(data){//ステージ上
   	socket.emit('clearClientNotice',now_turn);
-
 	console.log(data.get_pi+":"+data.selected_pi1+":"+data.selected_pi2+":"+data.pi[0]);
-  	/*if(data.pi[0]==0){
-  		console.log("chi!!!:"+data.pi[0]+":"+now_turn);
-  		document.getElementById(sute_index[now_turn]).innerHTML = "";
-  	}*/
 
-  	var index=0;
+  	//var index=0;
   	var temp = new Array(3);
   	temp[0] = createPiAddr(data.get_pi);
   	temp[1] = createPiAddr(data.selected_pi1);
   	temp[2] = createPiAddr(data.selected_pi2);
-  	document.getElementById(sute_index[now_turn]).innerHTML = "";
-/*  	while(data.pi[index]!=0){
-  		var temp2 = createPiAddr(data.pi[index]);
-  		document.getElementById(sute_index[now_turn]).innerHTML +="<img src=\"./img/"+temp2.addr+"\">";
-  	}*/
+  	$(sute_index2[now_turn]).empty();
+  	document.getElementById(sute_index[now_turn]).innerHTML = "<p>"+ baName[now_turn]+"  "+points[0]+"</p>";
   	for(var i=0;i<data.index;i++){
   		var temp2 = createPiAddr(data.pi[i]);
   		console.log("捨て牌:"+i+":"+temp2.id);
@@ -330,17 +393,31 @@
   		document.getElementById(naki_name[data.player]).innerHTML +="<img src=\"./img/"+temp[i].addr+"\">";
   	}
   });
+  //--------------リーチ--------------------
+  socket.on('reach',function(data){//ステージ上
+  	console.log("リーチ!"+data);
+  	document.getElementById("ton_sutehai").innerHTML += "<p>リーチ</p>";
+//  	document.getElementById("ton_tenbou").innerHTML = "<img src=\"./img/tenbou2.png\">";
+  });
     
   socket.on('canAction' , function(data){
-  	$(ponChiArray[data]).css({
-  		'opacity' : '1.0'
-  	});
+	canAction(data);
   });
     socket.on('banAction',function(data){
-  	$(ponChiArray[data]).css({
-  		'opacity' : '0.3'	
-  	});
+	banAction(data);
   });
+  function canAction(b){
+  	$(ponChiArray[b]).css({
+  		'opacity' : '1.0'
+  	});
+  	bCanAction[b] = true;
+  }
+  function banAction(b){
+  	$(ponChiArray[b]).css({
+  		'opacity' : '0.3'
+  	});
+  	bCanAction[b] = false;
+  }
     
   //---------------捨て牌処理-------------------
   var sute_index = ["ton_sutehai","nan_sutehai","sha_sutehai","pei_sutehai"];
@@ -365,9 +442,10 @@
   	console.log("receive clearClientNotice");
   	document.getElementById("your_turn").innerHTML = "";
   });
-  //------------------------ゲーム終了処理------------------------
-  var yaku_name=["平和","断ヤオ","イーペーコー","チャンタ","一気通貫","三色同順","三色同刻","トイトイ","三暗刻","三槓子","小三元","七対子","二盃口","ジュンチャン","ホンイツ","チンイツ","役満系"];
+
+//-------ここに役処理があった
   socket.on('game_end',function(data){
+  	winner = data;
   	if(your_kaze<4){
   		console.log("PLAYER_NUM:"+PLAYER_NUM);
   		console.log("now_mykaze:"+your_kaze);
@@ -387,14 +465,36 @@
   		pei_sutehai_index=0;
   		for(var i=0;i<4;i++){
 	  		document.getElementById(sute_index[i]).innerHTML = "";
+	  		document.getElementById(naki_name[i]).innerHTML = "";
 	  		$(sute_index2[i]).css({
 	  			'border-style':'none'
 	  		});
+	  		var temp = "#"+naki_name[i];
+	  		$(temp).css({
+	  			'border-style' : 'none',
+	  			'width' : '0'
+	  		});
 	  	}
 	  	document.getElementById("dora").innerHTML = "";
-	  	for(var i=0;i<yaku_name.length;i++){
+	  	for(var i=1;i<14;i++){
+	  		document.getElementById(i+"yaku").innerHTML += "<div onClick=\"doCulc("+i+");\">"+yaku_point[i-1]+"</div>";
+	  		var temp = "#"+i+"yaku";
+	  		$(temp).css({
+	  			'width': '120px',
+	  			'height' : '45px',
+	  			'font-size' : '20px',
+	  			'text-align' : 'center',
+	  			'line-height' : '45px',
+	  			'border' : '1px solid #0F0',
+	  			'margin' : '5px',
+	  			'background-color' : '#F55',
+	  			'position' : 'static',
+	  			'z-index' : '5'
+	  		});
+	  	}
+/*	  	for(var i=0;i<yaku_name.length;i++){
 		  	document.getElementById("yakuButton").innerHTML += "<div>"+yaku_name[i]+"</div>";
-		  }
+		  }*/
 		document.getElementById("next_game").innerHTML = "<div onClick=\"next_game();\">次の対局へ</div>";
 		$('#next_game').css({
 			'background-color':'#F00'
@@ -414,6 +514,41 @@
   	socket.emit('haipai',PLAYER_NUM-3);
   	var n = Math.floor(Math.random()*PLAYER_NUM);
   	socket.emit('start',n);
+  	if(oya<PLAYER_NUM-1)oya++;
+  	else oya=0;
+  	
+  	document.getElementById("ton_sutehai").innerHTML = "<p>東  "+points[0]+"</p>";
+   	document.getElementById("nan_sutehai").innerHTML = "<p>南  "+points[1]+"</p>";
+   	document.getElementById("sha_sutehai").innerHTML = "<p>西  "+points[2]+"</p>";
+   	document.getElementById("pei_sutehai").innerHTML = "<p>北  "+points[3]+"</p>";
+   	for(var i=0;i<4;i++){
+   		$(sute_index2[i]).css({
+   			'border':'3px solid #F00'
+   		});
+   		var temp = "#" + naki_name[i];
+   		$(temp).css({
+   			'border' : '1px solid #FF0',
+   			'width' : '600px'
+   		});
+   	}
+   	for(var i=1;i<14;i++){
+   		var temp = "#"+i+"yaku";
+   		$(temp).css({
+   			'border-style' : 'none',
+   			'background' : 'none',
+   			'width' : '0',
+   			'height' : '0'
+   		});
+   	}
+   	$('#next_game').empty();
+   	$('#dora').empty();
+   	$('#next_game').css({
+   		'background-color':'transparent'
+   	});
+   	for(var i=1;i<14;i++){
+	  	document.getElementById(i+"yaku").innerHTML = "";
+	 }
+   	
   }
   socket.on('resetClient',function(data){//プレイヤー側
   	if(your_kaze!=4){
@@ -421,13 +556,12 @@
   		for(var i=1;i<=14;i++){
   			document.getElementById("tehai_img"+i).innerHTML = "";
   		}
+  		reach_flag=0;
   	}
   });
   //----------------その他処理------------------
   socket.on('now_turn',function(data){
   	now_turn = data;
-	//fadeOutButton();
-//	console.log("now:"+now_turn);
   });
 
   

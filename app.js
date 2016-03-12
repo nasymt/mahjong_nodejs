@@ -17,15 +17,9 @@ var bPass = false;
 var ton_tehai = new Array(14),
   nan_tehai = new Array(14),
   sha_tehai = new Array(14),
-  pei_tehai = new Array(14);
- /* ton_sutehai = new Array(30),
-  nan_sutehai = new Array(30),
-  sha_sutehai = new Array(30),
-  pei_sutehai = new Array(30);
-  var ton_trash_index=0;
-  var nan_trash_index=0;
-  var sha_trash_index=0;
-  var pei_trash_index=0;*/
+  pei_tehai = new Array(14),
+  points = new Array(4);
+  bReach = new Array(4);
   
   var used_index = 0;
   var all_pai = [];
@@ -51,6 +45,9 @@ io.on('connection', function(socket){
 	else if(data.room=="sha")your_kaze=2;
 	else if(data.room=="pei")your_kaze=3;
 	else if(data.room=="stage")your_kaze=4;
+	for(var i=0;i<4;i++){
+		points[i] = 25000;
+	}
   	prepGame();
   }); 
   function prepGame(){
@@ -60,6 +57,7 @@ io.on('connection', function(socket){
   	for(var i=0;i<sutehai.length;i++){
   		sutehai[i] = new Array(30);
   		sutehai_index[i]=0;
+  		bReach[i] = false;
   		for(var j=0;j<30;j++){
   			sutehai[i][j] = 0;
   		}
@@ -129,7 +127,7 @@ io.on('connection', function(socket){
   	pai_left--;
   	socket.to("stage").emit('stage_update',pai_left);
   	socket.to(baName[now_turn]).emit('canAction' , 3);
-  	socket.to(baName[now_turn]).emit('canAction' , 5);
+  	if(!bReach[now_turn])socket.to(baName[now_turn]).emit('canAction' , 5);
   } 
  //--------------捨て牌処理---------------------
   socket.on('sutehai',function(data){
@@ -141,7 +139,9 @@ io.on('connection', function(socket){
 	console.log("sutehai:"+data);
   	bPass = true;
   	socket.broadcast.emit('canAction', 2);
+  	socket.broadcast.emit('canAction', 3);
   	socket.broadcast.emit('canAction', 4);
+  	socket.broadcast.emit('banAction', 5);
   	socket.to(baName[pre_turn]).broadcast.emit('canAction' ,0);
   	socket.broadcast.emit('sutehai_data',data);
   });
@@ -180,8 +180,6 @@ io.on('connection', function(socket){
   socket.on('chi' , function(data){
   	socket.emit('get_sutehai', temp_sutehai );
   	pass_count=0;//--------------これ他にも適用させること。
-	
-	
 	
  	var temp = sutehai[data.kaze][sutehai_index[data.kaze]-1];
  	sutehai[data.kaze].splice(sutehai_index[data.kaze]-1,1);
@@ -248,18 +246,21 @@ io.on('connection', function(socket){
   });
   //----------------ロン-------------------------
  socket.on('ron',function(data){
- 	io.sockets.emit('game_end',1);
+ 	io.sockets.emit('game_end',data);
   	console.log("gameend ron");
  });
+ 
+  socket.on('reach',function(data){
+  	if(!bReach[data])bReach[data]=true;
+  	socket.to("stage").emit('reach' , data);
+  });
  
  //---------------次の対局-----------------------
  socket.on('next_game' , function(data){
  	io.sockets.emit('resetClient',0);
  });
   socket.on('now_turn',function(data){
-//  	console.log("now2"+now_turn);
   	now_turn = data;
-//  	console.log("now3"+now_turn);
   });
 
 });

@@ -1,16 +1,27 @@
 var pre_select =0;
 var pair_pi = new Array(2);
 var tehai_length=0;
-function selectPi(pi,sute){
+
+function selectPi(pi){
+	console.log(pi+":"+reach_flag+"   selectPi");
 	if(pre_select!=pi)pre_select = pi;
 	else {
 		if(bTrash){
-			socket.emit('sutehai',myTehai[pi-1]);
-			myTehai.splice(pi-1,1);		
-			myTehai = sortPi(myTehai);
-			document.getElementById("tehai_img14").innerHTML = "";
-			console.log("牌を捨てました:"+pi);
-			bTrash=false;
+			if(reach_flag<2||(reach_flag==2&&pi==14)){
+				socket.emit('sutehai',myTehai[pi-1]);
+				myTehai.splice(pi-1,1);		
+				myTehai = sortPi(myTehai);
+				document.getElementById("tehai_img14").innerHTML = "";
+				console.log("牌を捨てました:"+pi+":"+reach_flag);
+				bTrash=false;
+				if(reach_flag==1){
+					socket.emit('reach' , your_kaze);
+					document.getElementById("aReach").play();
+				}else {
+					document.getElementById("aSute").play();
+				}
+				banAction(5);
+			}
 		}else if(bSelectPair){
 			if(nSelectPair==0){
 				pair_pi[0]=myTehai[pi-1];
@@ -33,6 +44,7 @@ function selectPi(pi,sute){
 				myTehai[pi-1]=0;
 				myTehai = sortPi(myTehai);
 				bTrash = true;
+				document.getElementById("aChi").play();
 			}
 		}
 	}
