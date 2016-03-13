@@ -83,6 +83,7 @@
 <audio id="aSute" src="./sound/sute.wav"></audio>
 <audio id="aReachBgm" src="./sound/reach_bgm.mp3"></audio>
 <audio id="aBgm" src="./sound/bgm1.mp3" loop></audio>
+<audio id="aBgm2" src="./sound/bgm2.mp3" loop></audio>
 <div id="yakuCulc">
 <div id="yakuButton"></div>
 </div>
@@ -137,6 +138,11 @@
   var winner_point2 = 0;
   var bCanAction = new Array(6);
   var bRyukyoku = false;
+  var bOyaren = false;
+  var field_kaze = new Array(4);
+  var oyaren_count = 0;
+  var bOyaren = false;
+  var audio_index=0;
 
   //--------------setup---------------------------
   function setup(data){
@@ -145,9 +151,10 @@
   	socket.json.emit('setup',{
   		room:baName_en[data]
   	});
+  	field_kaze[data]=data;//いらないかも
   	document.getElementById("selectKaze").innerHTML="<p></p>";
   	if(data!=4){//クライアント側
-  		document.getElementById("yourKaze").innerHTML = "<p>あなたは"+baName_ja[data]+"家です。</p>";  		
+  		document.getElementById("yourKaze").innerHTML = "<p>あなたは"+baName_ja[data]+"家です。</p>";  	
 		$('#startWaiting').css({
 			'background' : 'none'
 		});
@@ -166,6 +173,7 @@
   		});
  		document.getElementById('yourKaze').innerHTML = "";
  		for(var i=0;i<4;i++){
+ 			field_kaze[i]=i;
   			var temp = "#"+naki_name[i];
   			$(temp).css({
   				'border' : '1px solid #FF0'
@@ -189,34 +197,28 @@
    	socket.emit('haipai' , 1);
   	console.log("4麻開始");
   });
-  socket.on('stage_set',function(dora){
-  	var temp = createPiAddr(dora);
+  socket.on('stage_set',function(data){
+  	var temp = createPiAddr(data.dora);
   	document.getElementById("dora").innerHTML +="<p>ドラ<img src=\"./img/"+temp.addr+"\"></p>";
-  	document.getElementById("nokori").innerHTML ="<p>残 69 牌</p>";
+  	document.getElementById("nokori").innerHTML ="<p>残 "+data.left+" 牌</p>";
   	$('body').css({
   		'background-image' : "none",
   		'background-color':'#327D5D'
+  	});
+  	$('#startWaiting').css({
+  		'background' : 'none'
   	});
   });
   socket.on('stage_update',function(data){
   	document.getElementById("nokori").innerHTML = "<p>残 "+data+" 牌</p>";
   });
   function stage_setHTML(){
+   	setSuteBox();
    	document.getElementById("doHaipai3").innerHTML = "";
    	document.getElementById("doHaipai4").innerHTML = "";
-   	document.getElementById("ton_sutehai").innerHTML = "<p>東  "+points[0]+"</p>";
-   	document.getElementById("nan_sutehai").innerHTML = "<p>南  "+points[1]+"</p>";
-   	document.getElementById("sha_sutehai").innerHTML = "<p>西  "+points[2]+"</p>";
-   	if(PLAYER_NUM==4)document.getElementById("pei_sutehai").innerHTML = "<p>北  "+points[3]+"</p>";
    	document.getElementById("startWaiting").innerHTML = "";
-   	for(var i=0;i<4;i++){
-   		$(sute_index2[i]).css({
-   			'border':'3px solid #F00'
-   		});
-   	}
    	document.getElementById("game_start").innerHTML = "<input type=\"submit\" value=\"対局開始\">";
-   	document.getElementById("aMaze").play();
-   	
+   	document.getElementById("aMaze").play(); 	
   } 
   var now_stage = 0;
   $('#game_start').submit(function(e){
@@ -224,7 +226,7 @@
   	socket.emit('start' , 0);  	
   	console.log("PLAYER"+PLAYER_NUM);
   	document.getElementById("game_start").innerHTML = "";
-  	document.getElementById("now_stage").innerHTML = "<p>"+now_stage_char[now_stage]+"</p>";
+  	document.getElementById("now_stage").innerHTML = "<p>"+now_stage_char[now_stage]+"   "+(oyaren_count+1)+"本場</p>";
   });
   
   socket.on('notice_bakaze' , function(msg){
@@ -259,7 +261,8 @@
   	document.getElementById("ron").innerHTML = "<p onClick=\"emitAction(3);\">ロン</p>";
   	document.getElementById("pass").innerHTML = "<p onClick=\"emitAction(4);\">パス</p>";
   	document.getElementById("reach").innerHTML = "<p onClick=\"emitAction(5);\">リーチ</p>";
-  	if(your_kaze!=4)document.getElementById("yourKaze").innerHTML = "<p>あなたは"+baName_ja[your_kaze]+"家です。</p>"; 	
+  	console.log("tehai関数内：あなたは"+baName_ja[field_kaze[your_kaze]]+"です。"+field_kaze[your_kaze]);
+  	if(your_kaze!=4)document.getElementById("yourKaze").innerHTML = "<p>あなたは"+baName_ja[field_kaze[your_kaze]]+"家です。</p>"; 	
 	fadeOutButton();
 	for(var i=0;i<6;i++){
 		$(ponChiArray[i]).css({
@@ -279,7 +282,6 @@
   	document.getElementById("tehai_img14").innerHTML += "<img  style=\"margin-left:30px;\" src=\"./img/"+now_pi.addr+"\" onClick=\"selectPi(14);\">";
   	bTrash = true;
   	if(reach_flag==1)reach_flag=2;
-
   });
 
   //-----------チー・ポン・カン・ロン----------
@@ -342,7 +344,7 @@
   			if(bCanAction[5]){
   				reach_flag = 1;
   				document.getElementById("your_turn").innerHTML += "<p>リーチ！	</p>";
-  				banAction(5);
+  				fadeOutButton();
   			}
   			break;
   	}
@@ -359,7 +361,6 @@
   	var pon_count=0;
   	pon_index1=0;
   	pon_index2=0;
-  	
   	console.log("tehai_length:"+tehai_length);
   	//--------------ポンできるかチェック---------------
   	for(var i=0;i<tehai_length;i++){
@@ -369,7 +370,6 @@
   			if(pon_index1==0)pon_index1=i;
   			else if(pon_index2==0)pon_index2=i;
   		}
-  		console.log("poncheck:"+now_sutehai.id+":"+temp.id);
   	}
   	if(pon_count>1){//ポン可能にする
   	  	console.log("youcanpon");
@@ -385,7 +385,6 @@
   socket.on('naki',function(data){//ステージ上
   	socket.emit('clearClientNotice',now_turn);
 	console.log(data.get_pi+":"+data.selected_pi1+":"+data.selected_pi2+":"+data.pi[0]);
-
   	var temp = new Array(3);
   	temp[0] = createPiAddr(data.get_pi);
   	temp[1] = createPiAddr(data.selected_pi1);
@@ -405,7 +404,6 @@
   //--------------リーチ--------------------
   socket.on('reach',function(data){//ステージ上
   	console.log("リーチ!"+data);
-  	
   	document.getElementById(reach_name[data]).innerHTML = "<img src=\"./img/tenbou2.png\">";
 	document.getElementById("aReach").play();
 	setTimeout(function(){
@@ -426,7 +424,7 @@
   	$(ponChiArray[b]).css({
   		'opacity' : '1.0'
   	});
-  	bCanAction[b] = true;
+  	if(reach_flag==0||(reach_flag>0&&b==3))bCanAction[b] = true;
   }
   function banAction(b){
   	$(ponChiArray[b]).css({
@@ -462,6 +460,21 @@
 
 //------------------ゲーム終了処理------------------------
   socket.on('game_end',function(data){
+//  	if(field_kaze[0]==data.ton){
+	if(oya == data.new_oya){
+  		oyaren_count++;
+  		bOyaren=true;
+  	}
+  	else{
+  		oyaren_count=0;
+  		bOyaren=false;
+  		oya = data.new_oya;
+  	}
+  	field_kaze[0] = data.ton;
+  	field_kaze[1] = data.nan;
+  	field_kaze[2] = data.sha;
+  	field_kaze[3] = data.pei;
+  	console.log("あなたは"+field_kaze[0]+":"+field_kaze[1]+"    新たな親は "+oya);
   	game_end(data.kaze , data.tehai , data.ron_pi , data.reach , data.uraDora , data.dora);
   	for(var i=0;i<4;i++){
   		temp_points[i] = data.now_points[i];
@@ -470,10 +483,8 @@
   function game_end(kaze , tehai , ron_pi , bReach , ura , dora){
   	winner = kaze;
   	if(your_kaze<4){
-  		console.log("now_mykaze:"+your_kaze);
-  		your_kaze++;
-  		if(your_kaze>=PLAYER_NUM)your_kaze=0;
-  		console.log("now_mykaze2:"+your_kaze);
+//  		your_kaze++;
+//  		if(your_kaze>=PLAYER_NUM)your_kaze=0;
   		for(var i=1;i<=14;i++){
   			document.getElementById("tehai_img"+i).innerHTML = "";
  	 	}
@@ -482,6 +493,7 @@
   		fadeOutButton();
   	}
   	if(your_kaze==4){//ステージ用
+  		
   		if(kaze==5)document.getElementById("your_turn").innerHTML = "<p>流局</p>";
   		//--------画面初期化-------------
   		for(var i=0;i<4;i++){
@@ -527,7 +539,6 @@
 	  	$('#game_end_monitor > img').css({
 	  		'width' : '50px'
 	  	});
-	 
 	  	for(var i=1;i<14;i++){
 	  		document.getElementById(i+"yaku").innerHTML += "<div onClick=\"doCulc("+i+");\">"+yaku_point[i-1]+"</div>";
 	  		var temp = "#"+i+"yaku";
@@ -549,24 +560,26 @@
 			'background-color':'#F00',
 			'line-height' : '100px'
 		});
-		
   	}
   }
-  
   socket.on('ryukyoku' , function(data){
   	bRyukyoku = true;
-  	game_end(5);
-  	
+  	game_end(5);  	
   });
   
-  //------------------次局の準備-----------------
+  //--------------------------次局の準備-----------------------------------
   function next_game(){//ステージ上
   	//---------------画面初期化------------------
   	$('#game_end_monitor').empty();
+  	$('#next_game').empty();
+   	$('#dora').empty();
+   	$('#yakuButton').empty();
+   	for(var i=1;i<14;i++){
+	  	document.getElementById(i+"yaku").innerHTML = "";
+	}
   	//-------------------------------------------
-  	now_stage++;
-  	document.getElementById("now_stage").innerHTML ="<p>"+now_stage_char[now_stage]+"</p>";
-  	document.getElementById("yakuButton").innerHTML = "";
+  	if(!bOyaren)now_stage++;
+  	document.getElementById("now_stage").innerHTML ="<p>"+now_stage_char[now_stage]+"    "+(oyaren_count+1)+"本場</p>";
   	now_turn=0;
   	socket.emit('next_game',now_stage);
   	bNaki=false;
@@ -576,22 +589,13 @@
   	socket.emit('start',n);
   	if(oya<PLAYER_NUM-1)oya++;
   	else oya=0;
-  	
-  	document.getElementById("ton_sutehai").innerHTML = "<p>東  "+points[0]+"</p>";
-   	document.getElementById("nan_sutehai").innerHTML = "<p>南  "+points[1]+"</p>";
-   	document.getElementById("sha_sutehai").innerHTML = "<p>西  "+points[2]+"</p>";
-   	if(PLAYER_NUM==4)document.getElementById("pei_sutehai").innerHTML = "<p>北  "+points[3]+"</p>";
+	setSuteBox();
    	for(var i=0;i<4;i++){
-   		$(sute_index2[i]).css({
-   			'border':'3px solid #F00'
-   		});
    		var temp = "#" + naki_name[i];
    		$(temp).css({
    			'border' : '1px solid #FF0',
    			'width' : '600px'
    		});
-//    		var temp2 = "#"+reach_name[i];
-//    		$(temp2).empty();
    	}
    	for(var i=1;i<14;i++){
    		var temp = "#"+i+"yaku";
@@ -606,15 +610,20 @@
    		'height' : '0',
    		'width' : '0'
    	});
-   	$('#next_game').empty();
-   	$('#dora').empty();
    	$('#next_game').css({
    		'background-color':'transparent'
    	});
-   	for(var i=1;i<14;i++){
-	  	document.getElementById(i+"yaku").innerHTML = "";
+   	if(audio_index==0){
+	   	document.getElementById("aBgm").pause();
+	   	document.getElementById("aBgm2").play();
+	   	document.getElementById("aReachBgm").pause();
+	   	audio_index=1;
+	 }else {
+	 	document.getElementById("aBgm").play();
+	 	document.getElementById("aBgm2").pause();
+	 	document.getElementById("aReachBgm").pause();
+	 	audio_index=0;
 	 }
-   	
   }
   socket.on('resetClient',function(data){//プレイヤー側
   	if(your_kaze!=4){
@@ -625,9 +634,31 @@
   		reach_flag=0;
   	}
   });
+  
+  function setSuteBox(){
+  	for(var i=0;i<4;i++){
+   		if(i<3||(i==3&&PLAYER_NUM==4)){
+   			console.log("SETSUTE"+baName_ja[field_kaze[i]]+":"+points[field_kaze[i]]+":"+field_kaze[i]);
+   			document.getElementById(sute_index[i]).innerHTML = "<p>"+baName_ja[field_kaze[i]]+"  "+points[ field_kaze[i] ]+"</p>";
+   		}
+   		$(sute_index2[i]).css({
+   			'border':'3px solid #F00'
+   		});
+   	}
+  }
+  
   //----------------その他処理------------------
   socket.on('now_turn',function(data){
   	now_turn = data;
+  });
+  socket.on('your_kaze',function(data){
+  	your_kaze = data;
+  });
+  socket.on('field_kaze' , function(data){
+  	your_kaze[0] = data.ton;
+  	your_kaze[1] = data.nan;
+  	your_kaze[2] = data.sha;
+  	your_kaze[3] = data.pei;
   });
 
   

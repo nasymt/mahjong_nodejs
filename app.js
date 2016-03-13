@@ -31,29 +31,36 @@ var ton_tehai = new Array(14),
   var baName = ["ton","nan","sha","pei","stage"];
   var baName_jp = ["東","南","西","北","ステージ"];
   var bSelectPair=false;
-  var your_kaze;
+  var your_kaze = new Array(4);
   var sutehai = new Array(4);
   var sutehai_index = new Array(4);
   var bRyukyoku =false;
+  var bOyaren = false;
+  var oya = 0;
 io.on('connection', function(socket){
 //-------------------セットアップ--------------
   socket.on('setup',function(data){
   	socket.join(data.room);
   	if(data.room!="stage")PLAYER_NUM++;
-	if(data.room=="ton")your_kaze=0;
-	else if(data.room=="nan")your_kaze=1;
-	else if(data.room=="sha")your_kaze=2;
-	else if(data.room=="pei")your_kaze=3;
-	else if(data.room=="stage")your_kaze=4;
+  	for(var i=0;i<baName.length;i++){
+  		if(data.room == baName[i]){
+  			your_kaze[i] = i;
+  		}
+  	}  	
 	for(var i=0;i<4;i++){
 		points[i] = 25000;
 	}
-  	prepGame();
+	io.sockets.emit('notice_bakaze', PLAYER_NUM);
+  	console.log("あなたは"+baName_jp[your_kaze]+"です。参加人数:"+PLAYER_NUM+"人:now_turn"+now_turn);
+
+  	if(data.room=="stage")prepGame();
   }); 
   function prepGame(){
   	used_index=0;
   	now_turn=0;
   	pass_count=0;
+  	if(PLAYER_NUM==3)pai_left = 70;
+  	else if(PLAYER_NUM==4)pai_left = 57;
   	for(var i=0;i<sutehai.length;i++){
   		sutehai[i] = new Array(30);
   		sutehai_index[i]=0;
@@ -62,10 +69,7 @@ io.on('connection', function(socket){
   			sutehai[i][j] = 0;
   		}
   	}
-  	
-  	io.sockets.emit('notice_bakaze', PLAYER_NUM);
-  	console.log("あなたは"+baName_jp[your_kaze]+"です。参加人数:"+PLAYER_NUM+"人:now_turn"+now_turn);
-  }
+   }
   //--------------配牌-----------------------
   socket.on('haipai',function(data){
   	console.log("配牌完了");
@@ -93,7 +97,10 @@ io.on('connection', function(socket){
   	else if(data==1)used_index = 52;
   	
   	dora = all_pai[135];
-  	socket.emit('stage_set',dora); 	  	
+  	socket.emit('stage_set',{
+  		dora : dora,
+  		left : pai_left-1
+  	}); 	  	
   	socket.to("ton").emit("tehai",{
   		"tehai1" : ton_tehai[0],"tehai2" : ton_tehai[1],tehai3 : ton_tehai[2],tehai4 : ton_tehai[3],tehai5 : ton_tehai[4],tehai6 : ton_tehai[5],tehai7 : ton_tehai[6],
   		tehai8 : ton_tehai[7],tehai9 : ton_tehai[8],tehai10 : ton_tehai[9],tehai11 : ton_tehai[10],tehai12 : ton_tehai[11],tehai13 : ton_tehai[12],
@@ -113,6 +120,7 @@ io.on('connection', function(socket){
   //--------------ツモ-----------------------
   socket.on('start' , function(data){
   	tsumo(data,5);
+  	now_turn = data;
   });
   function tsumo(data,last_pass){
   	console.log("now"+now_turn+"ツモ牌"+all_pai[used_index]);
@@ -184,20 +192,10 @@ io.on('connection', function(socket){
   socket.on('chi' , function(data){
   	socket.emit('get_sutehai', temp_sutehai );
   	pass_count=0;//--------------これ他にも適用させること。
-	
  	var temp = sutehai[data.kaze][sutehai_index[data.kaze]-1];
  	sutehai[data.kaze].splice(sutehai_index[data.kaze]-1,1);
 
 	naki(sutehai[data.kaze] , temp , data.pi1 , data.pi2 , sutehai_index[data.kaze] , data.naki_player);
-	
-	/*socket.to("stage").emit('chi',{
-		pi:sutehai[data.kaze],
-		get_pi:temp,
-		selected_pi1:data.pi1,
-		selected_pi2:data.pi2,
-		index:sutehai_index[data.kaze],
-		player:data.naki_player
-	});*/	
   });
   //-----------------ポン-------------------------
   socket.on('pon',function(data){
@@ -209,19 +207,15 @@ io.on('connection', function(socket){
   	
   	var temp = sutehai[data.kaze][sutehai_index[data.kaze]-1];
 	sutehai[data.kaze].splice(sutehai_index[data.kaze]-1,1);
-	sutehai_index[data.kaze]--;
-	/*sutehai_index[data.kaze]--;
-	var temp = sutehai[data.kaze][sutehai_index[data.kaze]-1];
-	sutehai[data.kaze].splice(sutehai_index[data.kaze]-1,1);	*/
-	
+	sutehai_index[data.kaze]--;	
 	for(var i=0;i<sutehai_index[data.kaze];i++){
 		console.log("sutehai list:"+i+":"+sutehai[data.kaze][i]);
 	}
-	console.log("pon:"+temp+":"+data.pi1+":"+data.pi2);
+	//console.log("pon:"+temp+":"+data.pi1+":"+data.pi2);
   	
   	naki(sutehai[data.kaze] , temp , data.pi1 , data.pi2 , sutehai_index[data.kaze] , data.naki_player);
   });
-  
+  //--------------------鳴き処理------------------------------
   function naki( _pi , _getPi , _selected_pi1 , _selected_pi2 , _index , _player ){
   	socket.to("stage").emit('naki',{
 		pi : _pi,//鳴かれた人の捨て牌リスト
@@ -242,8 +236,19 @@ io.on('connection', function(socket){
   });
   //----------------ロン-------------------------
  socket.on('ron',function(data){
- 	//socket.to("stage").emit('display_ron' , data);
  	var isReach = false;
+ 	for(var i=0;i<PLAYER_NUM;i++){
+ 		if(your_kaze[i]==0)oya=i;
+ 	}
+ 	if(data.kaze!=oya){
+ 		for(var i=0;i<4;i++){
+ 			your_kaze[i]++;
+ 			if(your_kaze[i]>PLAYER_NUM-1)your_kaze[i]=0;
+ 		}
+ 		oya++;
+ 		if(oya>PLAYER_NUM-1)oya=0;
+ 	}
+ 	console.log("風"+your_kaze[0]+":"+your_kaze[1]);
  	if(bReach[data.kaze])isReach=true;
  	io.sockets.emit('game_end',{
  		kaze : data.kaze,
@@ -252,7 +257,12 @@ io.on('connection', function(socket){
  		ron_pi : temp_sutehai,
  		reach : isReach,
  		dora : all_pai[135],
- 		uraDora : all_pai[134]
+ 		uraDora : all_pai[134],
+ 		ton : your_kaze[0],
+ 		nan : your_kaze[1],
+ 		sha : your_kaze[2],
+ 		pei : your_kaze[3],
+ 		new_oya : oya
  	});
   	console.log("gameend ron:  リーチは"+bReach[data.kaze]);
  });
@@ -265,16 +275,27 @@ io.on('connection', function(socket){
  //---------------次の対局-----------------------
  socket.on('next_game' , function(data){
  	io.sockets.emit('resetClient',0);
+/* 	if(bOyaren){
+ 		bOyaren = false;
+ 	}else {
+ 		for(var i=0;i<4;i++){
+ 			your_kaze[i]--;
+ 			if(your_kaze[i]<0)your_kaze[i]=PLAYER_NUM-1;
+ 		}
+ 	}*/
+/* 	socket.emit('field_kaze' , {
+ 		ton : your_kaze[0],
+ 		nan : your_kaze[1],
+ 		sha : your_kaze[2],
+ 		pei : your_kaze[3]
+ 	});*/
+ 	prepGame();
  });
   socket.on('now_turn',function(data){
   	now_turn = data;
   });
 
 });
-
-function sortPi(n){
-	
-}
 
 //http.listen(process.env.PORT||3000 , function(){
 http.listen(3000 , function(){
