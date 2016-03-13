@@ -86,6 +86,7 @@
 <div id="yakuCulc">
 <div id="yakuButton"></div>
 </div>
+<div id="game_end_monitor"></div>
 
 <div id="1yaku"></div>
 <div id="2yaku"></div>
@@ -115,6 +116,7 @@
   var myTehai = new Array(14);
   var myTehai_type = new Array(14);
   var points = [25000,25000,25000,25000];
+  var temp_points = new Array(4);
 //------------id name--------------
   var baName_en = ["ton","nan","sha","pei","stage"];
   var baName_ja = ["東","南","西","北","ステージ"];
@@ -128,7 +130,7 @@
   var pon_index1=0;
   var pon_index2=0;
   var bTrash = false;
-  var bReach = false;
+//  var bReach = new Array(4);
   var reach_flag=0;
   var winner = 0;
   var winner_point = 0;
@@ -149,6 +151,7 @@
 		$('#startWaiting').css({
 			'background' : 'none'
 		});
+		//bReach[data]=false;
 		for(var i=0;i<bCanAction.length;i++){
 			bCanAction[i] = false;
 		}
@@ -204,7 +207,7 @@
    	document.getElementById("ton_sutehai").innerHTML = "<p>東  "+points[0]+"</p>";
    	document.getElementById("nan_sutehai").innerHTML = "<p>南  "+points[1]+"</p>";
    	document.getElementById("sha_sutehai").innerHTML = "<p>西  "+points[2]+"</p>";
-   	document.getElementById("pei_sutehai").innerHTML = "<p>北  "+points[3]+"</p>";
+   	if(PLAYER_NUM==4)document.getElementById("pei_sutehai").innerHTML = "<p>北  "+points[3]+"</p>";
    	document.getElementById("startWaiting").innerHTML = "";
    	for(var i=0;i<4;i++){
    		$(sute_index2[i]).css({
@@ -265,9 +268,6 @@
 	}
 	myTehai = sortPi(myTehai);
   });
-  socket.on('display_ron',function(data){
-  	
-  });
   
   //--------------ツモ--------------------------
   socket.on('tsumo' , function(data){
@@ -319,7 +319,14 @@
   			socket.emit('kan' , your_kaze);
   			break;
   		case 3:
-  			socket.emit('ron' , your_kaze);
+  			for(var i=0;i<4;i++){
+  				temp_points[i]=points[i];
+  			}
+  			socket.emit('ron',{
+  				kaze : your_kaze,
+  				tehai : myTehai,
+  				now_points : points
+  			});
   			winner = your_kaze;
   			console.log("ロン！"+your_kaze);
   			if(now_turn==your_kaze)document.getElementById("aTsumo").play();
@@ -379,7 +386,6 @@
   	socket.emit('clearClientNotice',now_turn);
 	console.log(data.get_pi+":"+data.selected_pi1+":"+data.selected_pi2+":"+data.pi[0]);
 
-  	//var index=0;
   	var temp = new Array(3);
   	temp[0] = createPiAddr(data.get_pi);
   	temp[1] = createPiAddr(data.selected_pi1);
@@ -399,6 +405,7 @@
   //--------------リーチ--------------------
   socket.on('reach',function(data){//ステージ上
   	console.log("リーチ!"+data);
+  	
   	document.getElementById(reach_name[data]).innerHTML = "<img src=\"./img/tenbou2.png\">";
 	document.getElementById("aReach").play();
 	setTimeout(function(){
@@ -453,12 +460,15 @@
   	document.getElementById("your_turn").innerHTML = "";
   });
 
-//-------ここに役処理があった
+//------------------ゲーム終了処理------------------------
   socket.on('game_end',function(data){
-  	game_end(data);
+  	game_end(data.kaze , data.tehai , data.ron_pi , data.reach , data.uraDora , data.dora);
+  	for(var i=0;i<4;i++){
+  		temp_points[i] = data.now_points[i];
+  	}
   });
-  function game_end(data){
-  	winner = data;
+  function game_end(kaze , tehai , ron_pi , bReach , ura , dora){
+  	winner = kaze;
   	if(your_kaze<4){
   		console.log("now_mykaze:"+your_kaze);
   		your_kaze++;
@@ -468,11 +478,12 @@
   			document.getElementById("tehai_img"+i).innerHTML = "";
  	 	}
  	 	document.getElementById("your_turn").innerHTML = "<p>ゲーム終了</p>";
- 	 	if(data==5)document.getElementById("your_turn").innerHTML += "<p>流局</p>"
+ 	 	if(kaze==5)document.getElementById("your_turn").innerHTML += "<p>流局</p>"
   		fadeOutButton();
   	}
   	if(your_kaze==4){//ステージ用
-  		if(data==5)document.getElementById("your_turn").innerHTML = "<p>流局</p>";
+  		if(kaze==5)document.getElementById("your_turn").innerHTML = "<p>流局</p>";
+  		//--------画面初期化-------------
   		for(var i=0;i<4;i++){
 	  		document.getElementById(sute_index[i]).innerHTML = "";
 	  		document.getElementById(naki_name[i]).innerHTML = "";
@@ -484,6 +495,8 @@
 	  			'border-style' : 'none',
 	  			'width' : '0'
 	  		});
+	  		var temp2 = "#"+reach_name[i];
+   			$(temp2).empty();
 	  	}
 	  	$('#startWaiting').css({
    			'background' : 'none'
@@ -491,6 +504,30 @@
    		$('#nokori').empty();
    		$('#now_stage').empty();
 	  	document.getElementById("dora").innerHTML = "";
+	  	//---------画面初期化ここまで-----------
+	  
+	  	//----------------あがり手牌など画面表示-----------------
+	  	document.getElementById("game_end_monitor").innerHTML = "<p>"+baName_ja[kaze]+"家がロンしました</p>";
+	  	for(var i=1;i<14;i++){
+	  		var temp = createPiAddr(tehai[i-1]);
+	  		document.getElementById("game_end_monitor").innerHTML += "<img src=\"./img/"+temp.addr+"\">";
+	  		console.log("ロン手牌:"+i+":"+temp.id+":"+tehai[i]);
+	  	}
+	  	var temp_pi = createPiAddr(ron_pi);
+	  	var temp_dora = createPiAddr(dora);
+	  	var temp_ura = createPiAddr(ura);
+	  	console.log(bReach);
+	  	if(!bReach)document.getElementById("game_end_monitor").innerHTML +="<p>あがり牌 <img src=\"./img/"+temp_pi.addr+"\"> ドラ<img src=\"./img/"+temp_dora.addr+"\"></p>";
+	  	else document.getElementById("game_end_monitor").innerHTML +="<p>あがり牌 <img src=\"./img/"+temp_pi.addr+"\">　ドラ<img src=\"./img/"+temp_dora.addr+"\">　裏ドラ<img src=\"./img/"+temp_ura.addr+"\"></p>";
+
+	  	$('#game_end_monitor').css({
+	  		'height' : '650px',
+	  		'width' : '800px'
+	  	});
+	  	$('#game_end_monitor > img').css({
+	  		'width' : '50px'
+	  	});
+	 
 	  	for(var i=1;i<14;i++){
 	  		document.getElementById(i+"yaku").innerHTML += "<div onClick=\"doCulc("+i+");\">"+yaku_point[i-1]+"</div>";
 	  		var temp = "#"+i+"yaku";
@@ -509,8 +546,10 @@
 	  	}
 		document.getElementById("next_game").innerHTML = "<div onClick=\"next_game();\">次の対局へ</div>";
 		$('#next_game').css({
-			'background-color':'#F00'
+			'background-color':'#F00',
+			'line-height' : '100px'
 		});
+		
   	}
   }
   
@@ -520,8 +559,11 @@
   	
   });
   
-  //------------次の対局-----------------
+  //------------------次局の準備-----------------
   function next_game(){//ステージ上
+  	//---------------画面初期化------------------
+  	$('#game_end_monitor').empty();
+  	//-------------------------------------------
   	now_stage++;
   	document.getElementById("now_stage").innerHTML ="<p>"+now_stage_char[now_stage]+"</p>";
   	document.getElementById("yakuButton").innerHTML = "";
@@ -538,7 +580,7 @@
   	document.getElementById("ton_sutehai").innerHTML = "<p>東  "+points[0]+"</p>";
    	document.getElementById("nan_sutehai").innerHTML = "<p>南  "+points[1]+"</p>";
    	document.getElementById("sha_sutehai").innerHTML = "<p>西  "+points[2]+"</p>";
-   	document.getElementById("pei_sutehai").innerHTML = "<p>北  "+points[3]+"</p>";
+   	if(PLAYER_NUM==4)document.getElementById("pei_sutehai").innerHTML = "<p>北  "+points[3]+"</p>";
    	for(var i=0;i<4;i++){
    		$(sute_index2[i]).css({
    			'border':'3px solid #F00'
@@ -548,8 +590,8 @@
    			'border' : '1px solid #FF0',
    			'width' : '600px'
    		});
-   		var temp2 = "#"+reach_name[i];
-   		$(temp2).empty();
+//    		var temp2 = "#"+reach_name[i];
+//    		$(temp2).empty();
    	}
    	for(var i=1;i<14;i++){
    		var temp = "#"+i+"yaku";
@@ -560,6 +602,10 @@
    			'height' : '0'
    		});
    	}
+   	$('#game_end_monitor').css({
+   		'height' : '0',
+   		'width' : '0'
+   	});
    	$('#next_game').empty();
    	$('#dora').empty();
    	$('#next_game').css({

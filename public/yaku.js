@@ -37,7 +37,8 @@
   		else if(n>=8&&n<11)winner_point = 8000;
   		else if(n==11||n==12)winner_point = 12000;
   		else if(n>=13)winner_point = 16000;
-  		points[winner]+=winner_point*3;
+  		if(PLAYER_NUM==4)points[winner]+=winner_point*3;
+  		else if(PLAYER_NUM==3)points[winner]+=winner_point*2;
   		for(var i=0;i<4;i++){
 	  		if(winner!=i)points[i]-=winner_point;
   		}
@@ -74,11 +75,16 @@
   			winner_point = 16000;
   			winner_point2 = 8000;
   		}
-  		points[winner]+=winner_point+winner_point2*2;
+  		if(PLAYER_NUM==3)points[winner]+=winner_point+winner_point2;
+  		else if(PLAYER_NUM==4)points[winner]+=winner_point+winner_point2*2;
   		for(var i=0;i<4;i++){
 	  		if( winner!=i && i != oya)points[i]-=winner_point2;
 	  		if(i==oya)points[i]-=winner_point;
   		}
   	} 
   	console.log("得点:"+points[0]+":"+points[1]+":"+points[2]+":"+points[3]); 	
+  	document.getElementById("game_end_monitor").innerHTML +="<p>東　"+temp_points[0]+"  →  "+points[0]+"</p>";
+	document.getElementById("game_end_monitor").innerHTML +="<p>南　"+temp_points[1]+"  →  "+points[1]+"</p>";
+	document.getElementById("game_end_monitor").innerHTML +="<p>西　"+temp_points[2]+"  →  "+points[2]+"</p>";
+	if(PLAYER_NUM==4)document.getElementById("game_end_monitor").innerHTML +="<p>北　"+temp_points[3]+"  →  "+points[3]+"</p>";
   }

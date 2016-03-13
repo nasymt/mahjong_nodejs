@@ -187,9 +187,6 @@ io.on('connection', function(socket){
 	
  	var temp = sutehai[data.kaze][sutehai_index[data.kaze]-1];
  	sutehai[data.kaze].splice(sutehai_index[data.kaze]-1,1);
-	/*sutehai_index[data.kaze]--;
-	var temp = sutehai[data.kaze][sutehai_index[data.kaze]-1];
-	sutehai[data.kaze].splice(sutehai_index[data.kaze]-1,1);*/
 
 	naki(sutehai[data.kaze] , temp , data.pi1 , data.pi2 , sutehai_index[data.kaze] , data.naki_player);
 	
@@ -200,12 +197,7 @@ io.on('connection', function(socket){
 		selected_pi2:data.pi2,
 		index:sutehai_index[data.kaze],
 		player:data.naki_player
-	});*/
-	
-	//socket.to(baName[now_turn]).emit('turn_end',1);
-// 	now_turn = data.naki_player;
-// 	socket.emit('your_turn',1);
-	
+	});*/	
   });
   //-----------------ポン-------------------------
   socket.on('pon',function(data){
@@ -250,9 +242,19 @@ io.on('connection', function(socket){
   });
   //----------------ロン-------------------------
  socket.on('ron',function(data){
- 	socket.to("stage").emit('display_ron' , data);
- 	io.sockets.emit('game_end',data);
-  	console.log("gameend ron");
+ 	//socket.to("stage").emit('display_ron' , data);
+ 	var isReach = false;
+ 	if(bReach[data.kaze])isReach=true;
+ 	io.sockets.emit('game_end',{
+ 		kaze : data.kaze,
+ 		tehai : data.tehai,
+ 		now_points : data.now_points,
+ 		ron_pi : temp_sutehai,
+ 		reach : isReach,
+ 		dora : all_pai[135],
+ 		uraDora : all_pai[134]
+ 	});
+  	console.log("gameend ron:  リーチは"+bReach[data.kaze]);
  });
  
   socket.on('reach',function(data){

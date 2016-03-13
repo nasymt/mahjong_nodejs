@@ -280,13 +280,13 @@ div#yakuCulc{
 	left:-50px;
 }
 
-/*#1yaku,#2yaku,#3yaku,#4yaku,#5yaku,#6yaku,#7yaku,#8yaku,#9yaku,#10yaku,#11yaku,#12yaku,#13yaku{
+#1yaku,#2yaku,#3yaku,#4yaku,#5yaku,#6yaku,#7yaku,#8yaku,#9yaku,#10yaku,#11yaku,#12yaku,#13yaku{
 	position:absolute;
 	width:60px;
 	height:30px;
 	background-color:#F00;
 	//border: 1px solid #FF0;
-}*/
+}
 /*-------------リーチ棒---------------*/
 #ton_reach,#nan_reach,#sha_reach,#pei_reach{
 	position:absolute;
@@ -312,4 +312,11 @@ div#yakuCulc{
 	top:45%;
 	left:26%;
 	transform:rotate(90deg);
+}
+
+/* --------------------------------- */
+#game_end_monitor{
+	position:absolute;
+	left:150px;
+	font-size:20px;
 }
