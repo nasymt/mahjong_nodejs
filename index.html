@@ -57,6 +57,10 @@
 <div id="nan_nakihai"></div>
 <div id="sha_nakihai"></div>
 <div id="pei_nakihai"></div>
+<div id="ton_reach"></div>
+<div id="nan_reach"></div>
+<div id="sha_reach"></div>
+<div id="pei_reach"></div>
 <div id="stage_monitor">
 <div id="dora"></div>
 <div id="nokori"></div>
@@ -78,7 +82,7 @@
 <audio id="aMaze" src="./sound/maze.wav"></audio>
 <audio id="aSute" src="./sound/sute.wav"></audio>
 <audio id="aReachBgm" src="./sound/reach_bgm.mp3"></audio>
-<audio id="aBgm" src="./sound/nomal_bgm1.mp3" loop></audio>
+<audio id="aBgm" src="./sound/bgm1.mp3" loop></audio>
 <div id="yakuCulc">
 <div id="yakuButton"></div>
 </div>
@@ -116,7 +120,7 @@
   var baName_ja = ["東","南","西","北","ステージ"];
   var now_stage_char = ["東一局" ,"東二局","東三局","東四局","南一局","南二局","南三局","南四局"];
   var naki_name = ["ton_nakihai" , "nan_nakihai" , "sha_nakihai","pei_nakihai"];
-
+  var reach_name = ["ton_reach" , "nan_reach" , "sha_reach" , "pei_reach"];
   var bNaki =false;
   var bPon = false;
   var PLAYER_NUM = 3;
@@ -261,6 +265,9 @@
 	}
 	myTehai = sortPi(myTehai);
   });
+  socket.on('display_ron',function(data){
+  	
+  });
   
   //--------------ツモ--------------------------
   socket.on('tsumo' , function(data){
@@ -392,8 +399,14 @@
   //--------------リーチ--------------------
   socket.on('reach',function(data){//ステージ上
   	console.log("リーチ!"+data);
-  	document.getElementById("ton_sutehai").innerHTML += "<p>リーチ</p>";
-//  	document.getElementById("ton_tenbou").innerHTML = "<img src=\"./img/tenbou2.png\">";
+  	document.getElementById(reach_name[data]).innerHTML = "<img src=\"./img/tenbou2.png\">";
+	document.getElementById("aReach").play();
+	setTimeout(function(){
+		document.getElementById("aReachBgm").play();	
+	},500);
+	document.getElementById("aBgm").pause();
+	//document.getElementById("aBgm").seekable.start();
+
   });
     
   socket.on('canAction' , function(data){
@@ -422,6 +435,7 @@
   	var pai = createPiAddr(data.index);
   	console.log("sutehai:"+pai.addr);
   	document.getElementById(sute_index[data.player]).innerHTML += "<img src=\"./img/"+pai.addr+"\">";
+  	document.getElementById("aSute").play();
   });
   
   socket.on('turn_end',function(data){
@@ -471,6 +485,11 @@
 	  			'width' : '0'
 	  		});
 	  	}
+	  	$('#startWaiting').css({
+   			'background' : 'none'
+   		});
+   		$('#nokori').empty();
+   		$('#now_stage').empty();
 	  	document.getElementById("dora").innerHTML = "";
 	  	for(var i=1;i<14;i++){
 	  		document.getElementById(i+"yaku").innerHTML += "<div onClick=\"doCulc("+i+");\">"+yaku_point[i-1]+"</div>";
@@ -529,6 +548,8 @@
    			'border' : '1px solid #FF0',
    			'width' : '600px'
    		});
+   		var temp2 = "#"+reach_name[i];
+   		$(temp2).empty();
    	}
    	for(var i=1;i<14;i++){
    		var temp = "#"+i+"yaku";

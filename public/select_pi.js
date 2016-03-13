@@ -16,10 +16,6 @@ function selectPi(pi){
 				bTrash=false;
 				if(reach_flag==1){
 					socket.emit('reach' , your_kaze);
-					document.getElementById("aReach").play();
-					document.getElementById("aReachBgm").play();
-				}else {
-					document.getElementById("aSute").play();
 				}
 				banAction(5);
 			}

@@ -47,8 +47,9 @@
 
 #tehai{
 	position:absolute;
-	top:30%;
+	top:20%;
 	z-index:15;
+	//border:1px solid #0F0;
 }
 #tehai,img{
 	margin:5px  5px;
@@ -72,9 +73,7 @@ input#stage_top{
 	position:absolute;
 	top:550px;
 	z-index:8;
-/*	background-color:#F00;*/
 }
-
 #chi{
 	left:50px;
 }
@@ -93,6 +92,7 @@ input#stage_top{
 #reach{
 	left:700px;
 }
+/*------------------鳴き牌-------------------*/
 #ton_nakihai,#nan_nakihai,#sha_nakihai,#pei_nakihai{
 	width:600px;
 	height:80px;
@@ -176,17 +176,16 @@ input#stage_top{
 	top:100px;
 	margin-left:50%;
 	left:-350px;
-//	border:1px solid #F00;
 	z-index:5;
 }
 
+/*--------------東南西北　選択------------*/
 #ton,#nan,#sha,#pei,#stage{
 	width:100px;
 	height:80px;
 	position:absolute;
 	font-size:20px;
 	text-align:center;
-//	border:1px solid #F00;
 	line-height:80px;
 }
 
@@ -288,3 +287,29 @@ div#yakuCulc{
 	background-color:#F00;
 	//border: 1px solid #FF0;
 }*/
+/*-------------リーチ棒---------------*/
+#ton_reach,#nan_reach,#sha_reach,#pei_reach{
+	position:absolute;
+	width:130px;
+	height:15px;
+}
+#ton_reach{
+	top:58%;
+	margin-left:50%;
+	left:-65px;
+}
+#nan_reach{
+	top:45%;
+	right:26%;
+	transform:rotate(-90deg);
+}
+#sha_reach{
+	top:32%;
+	margin-left:50%;
+	left:-65px;
+}
+#pei_reach{
+	top:45%;
+	left:26%;
+	transform:rotate(90deg);
+}

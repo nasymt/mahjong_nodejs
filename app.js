@@ -250,6 +250,7 @@ io.on('connection', function(socket){
   });
   //----------------ロン-------------------------
  socket.on('ron',function(data){
+ 	socket.to("stage").emit('display_ron' , data);
  	io.sockets.emit('game_end',data);
   	console.log("gameend ron");
  });
