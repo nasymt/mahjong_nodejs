@@ -4,7 +4,6 @@ http = require('http').Server(app),
 io = require('socket.io')(http);
 var fs =require('fs');
 
-
 app.get('/', function(req, res){
   res.sendfile('index.html');
 });
@@ -35,6 +34,7 @@ var ton_tehai = new Array(14),
   var your_kaze;
   var sutehai = new Array(4);
   var sutehai_index = new Array(4);
+  var bRyukyoku =false;
 io.on('connection', function(socket){
 //-------------------セットアップ--------------
   socket.on('setup',function(data){
@@ -118,7 +118,11 @@ io.on('connection', function(socket){
   	console.log("now"+now_turn+"ツモ牌"+all_pai[used_index]);
   	var turn_end_index = data-1;
   	if(turn_end_index <0) turn_end_index=PLAYER_NUM-1;
-  	used_index++;
+  	if(used_index<122)used_index++;
+  	else {
+  		bRyukyoku = true;
+  		io.sockets.emit('ryukyoku' , 0);
+  	}
   	socket.to(baName[turn_end_index]).json.emit('turn_end',0);
   	io.sockets.emit('now_turn',data);
 

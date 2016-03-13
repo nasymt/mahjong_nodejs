@@ -77,7 +77,8 @@
 <audio id="aTsumo" src="./sound/tsumo.wav"></audio>
 <audio id="aMaze" src="./sound/maze.wav"></audio>
 <audio id="aSute" src="./sound/sute.wav"></audio>
-
+<audio id="aReachBgm" src="./sound/reach_bgm.mp3"></audio>
+<audio id="aBgm" src="./sound/nomal_bgm1.mp3" loop></audio>
 <div id="yakuCulc">
 <div id="yakuButton"></div>
 </div>
@@ -129,13 +130,7 @@
   var winner_point = 0;
   var winner_point2 = 0;
   var bCanAction = new Array(6);
-//   var pre_bReach = false;
-/*  var audioReach = new Audio("./sound/reach.wav");
-  var audioRon = new Audio("./sound/ron.wav");
-  var audioChi = new Audio("./sound/chi.wav");
-  var audioPon = new Audio("./sound/pon.wav");
-  var audioKan = new Audio("./sound/kan.wav");
-  var audioTsumo = new Audio("./sound/tsumo.wav");*/
+  var bRyukyoku = false;
 
   //--------------setup---------------------------
   function setup(data){
@@ -169,6 +164,7 @@
   				'border' : '1px solid #FF0'
   			});
   		}
+  		document.getElementById("aBgm").play();
   	}
   	oya=0;
   }
@@ -212,6 +208,8 @@
    		});
    	}
    	document.getElementById("game_start").innerHTML = "<input type=\"submit\" value=\"対局開始\">";
+   	document.getElementById("aMaze").play();
+   	
   } 
   var now_stage = 0;
   $('#game_start').submit(function(e){
@@ -262,7 +260,6 @@
 		});
 	}
 	myTehai = sortPi(myTehai);
-	document.getElementById("aMaze").play();
   });
   
   //--------------ツモ--------------------------
@@ -335,7 +332,6 @@
   			}
   			break;
   	}
-  	//fadeOutButton();
   }
   function fadeOutButton(){
   	for(var i=0;i<6;i++){
@@ -445,9 +441,11 @@
 
 //-------ここに役処理があった
   socket.on('game_end',function(data){
+  	game_end(data);
+  });
+  function game_end(data){
   	winner = data;
   	if(your_kaze<4){
-  		console.log("PLAYER_NUM:"+PLAYER_NUM);
   		console.log("now_mykaze:"+your_kaze);
   		your_kaze++;
   		if(your_kaze>=PLAYER_NUM)your_kaze=0;
@@ -456,13 +454,11 @@
   			document.getElementById("tehai_img"+i).innerHTML = "";
  	 	}
  	 	document.getElementById("your_turn").innerHTML = "<p>ゲーム終了</p>";
+ 	 	if(data==5)document.getElementById("your_turn").innerHTML += "<p>流局</p>"
   		fadeOutButton();
   	}
   	if(your_kaze==4){//ステージ用
-  		ton_sutehai_index=0;
-  		nan_sutehai_index=0;
-  		sha_sutehai_index=0;
-  		pei_sutehai_index=0;
+  		if(data==5)document.getElementById("your_turn").innerHTML = "<p>流局</p>";
   		for(var i=0;i<4;i++){
 	  		document.getElementById(sute_index[i]).innerHTML = "";
 	  		document.getElementById(naki_name[i]).innerHTML = "";
@@ -492,14 +488,17 @@
 	  			'z-index' : '5'
 	  		});
 	  	}
-/*	  	for(var i=0;i<yaku_name.length;i++){
-		  	document.getElementById("yakuButton").innerHTML += "<div>"+yaku_name[i]+"</div>";
-		  }*/
 		document.getElementById("next_game").innerHTML = "<div onClick=\"next_game();\">次の対局へ</div>";
 		$('#next_game').css({
 			'background-color':'#F00'
 		});
   	}
+  }
+  
+  socket.on('ryukyoku' , function(data){
+  	bRyukyoku = true;
+  	game_end(5);
+  	
   });
   
   //------------次の対局-----------------
